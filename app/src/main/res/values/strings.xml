@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">pdfeditor</string>
+    <string name="pdf_tools">PDF Tools</string>
+    <string name="done">Done</string>
+    <string name="back">Back</string>
+
+    <string name="pdf_merge">PDF Merge</string>
+    <string name="pdf_split">PDF Split</string>
+    <string name="add_page_number">Add Page Number</string>
+    <string name="change_orientation">Change Orientation</string>
+    <string name="password_protection">Password Protection</string>
+
+    <string name="application_pdf">application/pdf</string>
+    <string name="delete">delete</string>
+    <string name="menu">Menu</string>
+    <string name="lock">Lock</string>
+    <string name="refresh">refresh</string>
+    <string name="my_creation">My Creation</string>
+    <string name="pdf_viewer">Pdf Viewer</string>
+</resources>
