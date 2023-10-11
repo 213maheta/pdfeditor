@@ -159,6 +159,8 @@ fun getDestinationNode(node: String): String {
         "Add Page Number" -> return ScreenName.ADD_PAGE_NUMBER_SCREEN
         "Orientation" -> return ScreenName.ORIENTATION_SCREEN
         "Protect PDF" -> return ScreenName.PASSWORD_PROTECTION_SCREEN
+        "Unlock PDF" -> return ScreenName.UNLOCK_PASSWORD_SCREEN
+        "Text to PDF" -> return ScreenName.PASSWORD_DIALOG_SCREEN
         else -> return ScreenName.SPLIT_PDF_SCREEN
     }
 }

@@ -1,8 +1,13 @@
 package com.twoonethree.pdfeditor.events
 
+import com.itextpdf.kernel.pdf.PdfReader
+
 
 sealed class ScreenCommonEvents{
     data class ShowToast(val message:String):ScreenCommonEvents()
+    data object ShowPasswordDialog:ScreenCommonEvents()
+    data class GotProtectedPdf(val pdfReaderOuter:PdfReader):ScreenCommonEvents()
+    data class GotTotalPageNumber(val totalPageNumber: Int):ScreenCommonEvents()
     data object EMPTY:ScreenCommonEvents()
 }
 

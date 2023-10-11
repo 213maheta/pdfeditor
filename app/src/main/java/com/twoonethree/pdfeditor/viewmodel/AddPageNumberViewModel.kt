@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.itextpdf.kernel.pdf.PdfReader
 import com.twoonethree.pdfeditor.events.AddPageNumberSelection
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
@@ -17,7 +18,7 @@ class AddPageNumberViewModel:ViewModel() {
     var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0))
     var totalPageNumber = 0
 
-    val selectedCorner = mutableStateOf<AddPageNumberSelection>(AddPageNumberSelection.EMPTY)
+    val selectedCorner = mutableStateOf<AddPageNumberSelection>(AddPageNumberSelection.BOTTOM_RIGHT)
 
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
 
@@ -30,10 +31,15 @@ class AddPageNumberViewModel:ViewModel() {
         selectedPdf.value = PdfData("", "" , null, null, 0)
     }
 
-    fun addPageNumber(resolver: ContentResolver, uri: Uri?)
+    fun addPageNumber(resolver: ContentResolver, uri: Uri?, pdfReader: PdfReader?)
     {
         uri?.let {
-            PdfUtilities.addPageNumber(resolver, it, ::setUiIntent, ::getXYposition)
+            if(selectedPdf.value.totalPageNumber == 0 && pdfReader == null)
+            {
+                setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
+                return
+            }
+            PdfUtilities.addPageNumber(resolver, it, ::setUiIntent, ::getXYposition, pdfReader)
         }?: kotlin.run {
             setUiIntent(ScreenCommonEvents.ShowToast("Select file first"))
         }

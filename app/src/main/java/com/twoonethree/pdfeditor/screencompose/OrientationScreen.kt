@@ -31,6 +31,7 @@ import androidx.navigation.NavController
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.viewmodel.OrientationViewModel
+import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
 
 @Composable
 fun OrientationScreen(navController: NavController) {
@@ -54,7 +55,14 @@ fun OrientationScreen(navController: NavController) {
                     myToast(context, it.message)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-
+                is ScreenCommonEvents.ShowPasswordDialog ->{
+                    PasswordDialogViewModel.selectedPdf.value = vm.selectedPdf.value
+                    PasswordDialogViewModel.isVisible.value = true
+                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
+                }
+                is ScreenCommonEvents.GotProtectedPdf ->{
+                    vm.changeOrientation(resolver = contentResolver, vm.selectedPdf.value.uri, it.pdfReaderOuter)
+                }
                 else -> {}
             }
         }
@@ -79,10 +87,15 @@ fun OrientationScreen(navController: NavController) {
     MyTopAppBar(
         titleId = R.string.change_orientation,
         backClick = { navController.navigateUp() },
-        doneClick = { vm.changeOrientation(resolver = contentResolver, vm.selectedPdf.value.uri) },
+        doneClick = { vm.changeOrientation(resolver = contentResolver, vm.selectedPdf.value.uri, null) },
         floatBtnClick = { pickPdfDocument.launch(arrayOf(context.getString(R.string.application_pdf))) },
         innerContent = innerContent,
     )
+
+    when{
+        PasswordDialogViewModel.isVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+    }
+
 }
 
 

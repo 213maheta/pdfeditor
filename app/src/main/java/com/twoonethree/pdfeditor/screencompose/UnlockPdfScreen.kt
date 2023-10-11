@@ -14,17 +14,18 @@ import androidx.navigation.NavController
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
-import com.twoonethree.pdfeditor.viewmodel.PasswordProtectionViewModel
+import com.twoonethree.pdfeditor.viewmodel.UnlockPdfViewModel
 
 @Composable
-fun PasswordProtectionScreen(navController: NavController)
+fun UnlockPdfScreen(navController: NavController)
 {
-    val vm = viewModel<PasswordProtectionViewModel>()
+    val vm = viewModel<UnlockPdfViewModel>()
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
 
     val pickPdfDocument = pdfLauncherOpenDocument { pdf ->
         vm.selectedPdf.value = pdf
+        vm.removePassword(contentResolver, vm.selectedPdf.value.uri, null)
         true
     }
 
@@ -41,9 +42,8 @@ fun PasswordProtectionScreen(navController: NavController)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.GotProtectedPdf ->{
-                    vm.setPassword(contentResolver, vm.selectedPdf.value.uri, it.pdfReaderOuter)
+                    vm.removePassword(contentResolver, vm.selectedPdf.value.uri, it.pdfReaderOuter)
                 }
-
                 else -> {}
             }
         }
@@ -59,18 +59,15 @@ fun PasswordProtectionScreen(navController: NavController)
                 vm.selectedPdf.value.let { pdfData ->
                     pdfData.uri?.let {
                         ItemPDF(pdfData, vm::removeSelectedPdf)
-                        GetPassword(vm.password.value) { value: String ->
-                            vm.password.value = value
-                        }
                     }
                 }
             }
         }
 
     MyTopAppBar(
-        titleId = R.string.password_protection,
+        titleId = R.string.unlock_pdf,
         backClick = { navController.navigateUp() },
-        doneClick = { vm.setPassword(contentResolver, vm.selectedPdf.value.uri, null) },
+        doneClick = { vm.removePassword(contentResolver, vm.selectedPdf.value.uri, null) },
         floatBtnClick = { pickPdfDocument.launch(arrayOf(context.getString(R.string.application_pdf))) },
         innerContent = innerContent,
     )
@@ -79,4 +76,3 @@ fun PasswordProtectionScreen(navController: NavController)
         PasswordDialogViewModel.isVisible.value -> PasswordDialogScreen(vm::setUiIntent)
     }
 }
-

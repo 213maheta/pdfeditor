@@ -15,9 +15,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.google.gson.Gson
 import com.twoonethree.pdfeditor.Destination
 import com.twoonethree.pdfeditor.R
+import com.twoonethree.pdfeditor.model.PdfData
 import kotlinx.coroutines.delay
 
 @Composable
@@ -51,6 +51,9 @@ fun Navingation() {
         }
         composable(Destination.PasswordProtectionScreen.node) {
             PasswordProtectionScreen(navController)
+        }
+        composable(Destination.UnlockPasswordScreen.node) {
+            UnlockPdfScreen(navController)
         }
     }
 }

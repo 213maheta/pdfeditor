@@ -31,7 +31,9 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.twoonethree.pdfeditor.R
+import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.utilities.StringUtilities
+import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
 import com.twoonethree.pdfeditor.viewmodel.PdfViewerViewModel
 
 @Composable
@@ -100,6 +102,7 @@ fun PdfPageListView(bitmapList: List<ImageBitmap>)
 
         }
     }
+
 }
 
 @Composable

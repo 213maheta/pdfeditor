@@ -11,7 +11,7 @@ object TimeUtilities {
     }
 
     fun convertLongToTime(time: Long): String {
-        val date = Date(System.currentTimeMillis() - time)
+        val date = Date(time*1000)
         val format = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.getDefault())
         return format.format(date)
     }

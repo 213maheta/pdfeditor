@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.itextpdf.kernel.pdf.PdfReader
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.utilities.FileManager
@@ -15,6 +16,7 @@ class SplitPDFViewModel() : ViewModel() {
      val splitPointList = mutableStateListOf<Int>()
      var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0))
      var totalPageNumber = 0
+     var pdfReader:PdfReader? = null
 
      val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
 
@@ -32,6 +34,7 @@ class SplitPDFViewModel() : ViewModel() {
                          selectedPdf.value,
                          FileManager.getSplitFilePath(),
                          splitPointList.toList().sortedBy { it },
+                         pdfReader,
                          ::setUiIntent
                     )
                }
@@ -42,7 +45,13 @@ class SplitPDFViewModel() : ViewModel() {
      {
           if(value.isEmpty())
                return
+          if(totalPageNumber == 0)
+          {
+               setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
+               return
+          }
           val splitPoint = value.toInt()
+
           when{
                splitPoint > totalPageNumber -> setUiIntent(ScreenCommonEvents.ShowToast("Split point should be less than total page count"))
                splitPoint < 1 -> setUiIntent(ScreenCommonEvents.ShowToast("Split point be should more than 0"))
@@ -56,6 +65,11 @@ class SplitPDFViewModel() : ViewModel() {
           splitPointList.remove(value)
      }
 
+     fun updatePageNumber()
+     {
+          selectedPdf.value = selectedPdf.value.copy(totalPageNumber = totalPageNumber)
+     }
+
      fun removeAllSplitPoints()
      {
           splitPointList.clear()
@@ -63,6 +77,9 @@ class SplitPDFViewModel() : ViewModel() {
 
      fun removeSelectedPdf(value:PdfData)
      {
+          totalPageNumber = 0
           selectedPdf.value = PdfData("", "" , null, null, 0)
+          removeAllSplitPoints()
+          pdfReader = null
      }
 }

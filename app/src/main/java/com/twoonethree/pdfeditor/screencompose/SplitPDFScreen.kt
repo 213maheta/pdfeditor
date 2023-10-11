@@ -38,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
+import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
 import com.twoonethree.pdfeditor.viewmodel.SplitPDFViewModel
 
 @Composable
@@ -50,6 +51,9 @@ fun SplitPDFScreen(navController: NavHostController) {
         vm.selectedPdf.value = pdf
         vm.totalPageNumber = pdf.totalPageNumber
         vm.splitPointList.clear()
+        vm.pdfReader = null
+        if(vm.totalPageNumber == 0)
+            vm.setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
         true
     }
 
@@ -60,6 +64,19 @@ fun SplitPDFScreen(navController: NavHostController) {
                     myToast(context, it.message)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
+                is ScreenCommonEvents.ShowPasswordDialog ->{
+                    PasswordDialogViewModel.selectedPdf.value = vm.selectedPdf.value
+                    PasswordDialogViewModel.isVisible.value = true
+                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
+                }
+                is ScreenCommonEvents.GotProtectedPdf ->{
+                    vm.pdfReader = it.pdfReaderOuter
+                    vm.updatePageNumber()
+                }
+                is ScreenCommonEvents.GotTotalPageNumber ->{
+                    vm.totalPageNumber = it.totalPageNumber
+                }
+
 
                 else -> {}
             }
@@ -89,6 +106,10 @@ fun SplitPDFScreen(navController: NavHostController) {
         floatBtnClick = { pickPdfDocument.launch(context.getString(R.string.application_pdf)) },
         innerContent = innerContent,
     )
+
+    when{
+        PasswordDialogViewModel.isVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+    }
 }
 
 @Composable

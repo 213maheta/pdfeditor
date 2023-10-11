@@ -10,6 +10,8 @@ object ScreenName {
     const val ADD_PAGE_NUMBER_SCREEN = "add_page_number_screen"
     const val ORIENTATION_SCREEN = "orientation_screen"
     const val PASSWORD_PROTECTION_SCREEN = "password_protection_screen"
+    const val UNLOCK_PASSWORD_SCREEN = "unlock_password_screen"
+    const val PASSWORD_DIALOG_SCREEN = "password_dialog_screen"
 }
 
 object StringUtilities {

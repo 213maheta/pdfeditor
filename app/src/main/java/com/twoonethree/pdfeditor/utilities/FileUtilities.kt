@@ -24,7 +24,8 @@ object FileUtilities {
         val name = returnCursor.getString(nameIndex)
         val size = returnCursor.getString(sizeIndex)
         returnCursor.close()
-        return PdfData(name = name,
+        return PdfData(
+            name = name,
             size = convertByteToMB(size),
             uri = uri,
             thumbnail = PdfUtilities.getPdfThumbnail(resolver = resolver, uri = uri),
@@ -33,23 +34,24 @@ object FileUtilities {
     }
 
     fun convertByteToMB(value: String): String {
-        return "${MathUtilities.roundOffDecimal(value.toLong()/1000000.0)} mb"
+        return "${MathUtilities.roundOffDecimal(value.toLong() / 1000000.0)} mb"
     }
 
-    fun getAllPdf(resolver: ContentResolver, addAllPdf: (pdfList: List<PdfData>) -> Unit){
+    fun getAllPdf(resolver: ContentResolver, addAllPdf: (pdfList: List<PdfData>) -> Unit) {
 
         CoroutineScope(Dispatchers.IO).launch {
             val pdfList = mutableListOf<PdfData>()
 
             val projection = arrayOf(
                 MediaStore.Files.FileColumns.DISPLAY_NAME,
+                MediaStore.Files.FileColumns.DATE_MODIFIED,
                 MediaStore.Files.FileColumns.DATE_ADDED,
                 MediaStore.Files.FileColumns.DATA,
                 MediaStore.Files.FileColumns.SIZE,
                 MediaStore.Files.FileColumns.MIME_TYPE,
             )
 
-            val sortOrder = MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
+            val sortOrder = MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC"
 
             val selection = MediaStore.Files.FileColumns.MIME_TYPE + " = ?"
 
@@ -66,22 +68,31 @@ object FileUtilities {
                 .use { cursor ->
                     assert(cursor != null)
                     if (cursor?.moveToFirst() == true) {
-                        val columnName = cursor.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME)
+                        val columnName =
+                            cursor.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME)
                         val columnData = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA)
-                        val columnDate  = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_ADDED)
-                        val columnSize  = cursor.getColumnIndex(MediaStore.Files.FileColumns.SIZE)
+                        val columnModifiedDate =
+                            cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_MODIFIED)
+                        val columnAddedDate =
+                            cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_ADDED)
+                        val columnSize = cursor.getColumnIndex(MediaStore.Files.FileColumns.SIZE)
                         do {
                             val name = cursor.getString(columnName)
                             val filePath = cursor.getString(columnData)
-                            val addedDate = cursor.getString(columnDate)
+                            val modifiedDate = cursor.getString(columnModifiedDate)
+                            val addedDate = cursor.getString(columnAddedDate)
 
                             val file = File(filePath)
                             val uri = file.toUri()
 
                             val imageBitmap = PdfUtilities.getPdfThumbnail(resolver, uri)
-                            val totalPageNumber = PdfUtilities.getTotalPageNumber(resolver,uri)
+                            val totalPageNumber = PdfUtilities.getTotalPageNumber(resolver, uri)
                             val size = convertByteToMB(file.length().toString())
-                            val dateTime = TimeUtilities.convertLongToTime(addedDate.toLong())
+                            val dateTime =
+                                if (modifiedDate.isNullOrEmpty())
+                                    TimeUtilities.convertLongToTime(addedDate.toLong())
+                                else
+                                    TimeUtilities.convertLongToTime(modifiedDate.toLong())
 
                             val pdfData = PdfData(
                                 name = name,

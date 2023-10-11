@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
+import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import com.itextpdf.kernel.crypto.BadPasswordException
@@ -11,6 +12,7 @@ import com.itextpdf.kernel.pdf.EncryptionConstants
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfReader
 import com.itextpdf.kernel.pdf.PdfWriter
+import com.itextpdf.kernel.pdf.ReaderProperties
 import com.itextpdf.kernel.pdf.WriterProperties
 import com.itextpdf.kernel.utils.PageRange
 import com.itextpdf.kernel.utils.PdfMerger
@@ -21,10 +23,13 @@ import com.itextpdf.layout.property.TextAlignment
 import com.itextpdf.layout.property.VerticalAlignment
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
+import com.twoonethree.pdfeditor.screencompose.pdfLauncher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileNotFoundException
 
@@ -59,12 +64,14 @@ object PdfUtilities {
         srcFile: PdfData,
         dstFile: String,
         splitPointList: List<Int>,
+        pdfReaderOut: PdfReader?,
         setUiEvent: (ScreenCommonEvents) -> Unit
     ) {
         srcFile.uri?.let {
             CoroutineScope(Dispatchers.IO).launch {
                 val inputStream = resolver.openInputStream(it)
-                val pdfDoc = PdfDocument(PdfReader(inputStream))
+                val pdfReader = pdfReaderOut?:PdfReader(inputStream).also { it.setUnethicalReading(true) }
+                val pdfDoc = PdfDocument(pdfReader)
                 val splitDocuments = object : PdfSplitter(pdfDoc) {
                     var partNumber = 1
                     override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
@@ -107,10 +114,25 @@ object PdfUtilities {
             inputStream?.close()
             reader.close()
             return 0
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             inputStream?.close()
             reader.close()
+            return -1
+        }
+    }
+
+    fun getTotalPageNumber(pdfReader: PdfReader): Int {
+        try {
+            val pdf = PdfDocument(pdfReader)
+            val pageCount = pdf.numberOfPages
+
+            pdfReader.close()
+            pdf.close()
+            return pageCount
+
+        } catch (e: BadPasswordException) {
+            return 0
+        } catch (e: Exception) {
             return -1
         }
     }
@@ -119,7 +141,11 @@ object PdfUtilities {
         resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
             try {
                 val pdfRenderer = PdfRenderer(parcelFileDescriptor).openPage(0)
-                val bitmap = Bitmap.createBitmap(pdfRenderer.width, pdfRenderer.height, Bitmap.Config.ARGB_8888)
+                val bitmap = Bitmap.createBitmap(
+                    pdfRenderer.width,
+                    pdfRenderer.height,
+                    Bitmap.Config.ARGB_8888
+                )
                 pdfRenderer.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                 pdfRenderer.close()
                 return bitmap.asImageBitmap()
@@ -160,22 +186,29 @@ object PdfUtilities {
         resolver: ContentResolver,
         uri: Uri,
         callBack: (ScreenCommonEvents) -> Unit,
-        getXYPosition: (Float, Float) -> Pair<Float, Float>
+        getXYPosition: (Float, Float) -> Pair<Float, Float>,
+        pdfReaderOut: PdfReader?,
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             val src = resolver.openInputStream(uri)
             val dst = FileManager.createPdfFile()
-            val pdfDoc = PdfDocument(PdfReader(src).also { it.setUnethicalReading(true) }, PdfWriter(dst))
+            val pdfReader = pdfReaderOut?:PdfReader(src).also { it.setUnethicalReading(true) }
+            val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
             val doc = Document(pdfDoc)
             val numberOfPages = pdfDoc.numberOfPages
             val x = pdfDoc.firstPage.pageSize.width
             val y = pdfDoc.firstPage.pageSize.height
 
-            val position = getXYPosition(x,y)
+            val position = getXYPosition(x, y)
             for (i in 1..numberOfPages) {
                 doc.showTextAligned(
                     Paragraph(String.format("page %s of %s", i, numberOfPages)),
-                    position.first, position.second, i, TextAlignment.CENTER, VerticalAlignment.MIDDLE, 0f
+                    position.first,
+                    position.second,
+                    i,
+                    TextAlignment.CENTER,
+                    VerticalAlignment.MIDDLE,
+                    0f
                 )
             }
             src?.close()
@@ -190,56 +223,130 @@ object PdfUtilities {
         uri: Uri,
         callBack: (ScreenCommonEvents) -> Unit,
         value: Int,
-        function: () -> Unit
-    )
-    {
-        val src = resolver.openInputStream(uri)
-        val dst = FileManager.createPdfFile()
-        val pdfDoc = PdfDocument(PdfReader(src).also { it.setUnethicalReading(true) }, PdfWriter(dst))
-        val doc = Document(pdfDoc)
-        val numberOfPages = pdfDoc.numberOfPages
+        pdfReaderOut: PdfReader?,
+        function: () -> Unit,
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val src = resolver.openInputStream(uri)
+            val dst = FileManager.createPdfFile()
 
-        for (i in 1..numberOfPages) {
-            val page = pdfDoc.getPage(i)
-            page.setRotation(value)
+            val pdfReader = pdfReaderOut?:PdfReader(src).also { it.setUnethicalReading(true) }
+            val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
+            val doc = Document(pdfDoc)
+            val numberOfPages = pdfDoc.numberOfPages
+
+            for (i in 1..numberOfPages) {
+                val page = pdfDoc.getPage(i)
+                page.setRotation(value)
+            }
+            src?.close()
+            pdfDoc.close()
+            doc.close()
+            function()
+            callBack(ScreenCommonEvents.ShowToast("Orientation changed successfully"))
         }
-        src?.close()
-        pdfDoc.close()
-        doc.close()
-        function()
-        callBack(ScreenCommonEvents.ShowToast("Orientation changed successfully"))
+
     }
 
     fun getOrientation(
         resolver: ContentResolver,
         uri: Uri,
     ): Int {
-        val src = resolver.openInputStream(uri)
-        val pdfDoc = PdfDocument(PdfReader(src).also { it.setUnethicalReading(true) })
-        val orientaion = pdfDoc.firstPage.rotation
-        src?.close()
-        pdfDoc.close()
-        return orientaion
+        try {
+            val src = resolver.openInputStream(uri)
+            val pdfDoc = PdfDocument(PdfReader(src).also { it.setUnethicalReading(true) })
+            val orientaion = pdfDoc.firstPage.rotation
+            src?.close()
+            pdfDoc.close()
+            return orientaion
+        } catch (e: BadPasswordException) {
+            return -1
+        } catch (e: Exception) {
+            return -2
+        }
+
     }
 
     fun setPassword(
         resolver: ContentResolver,
         uri: Uri,
         password: String,
+        pdfReaderOut: PdfReader?,
         callBack: (ScreenCommonEvents) -> Unit
-    )
-    {
-        val src = resolver.openInputStream(uri)
-        val dst = FileManager.createPdfFile()
-        val props = WriterProperties()
-            .setStandardEncryption(
-                password.toByteArray(), password.toByteArray(), EncryptionConstants.ALLOW_PRINTING,
-                EncryptionConstants.STANDARD_ENCRYPTION_128
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val src = resolver.openInputStream(uri)
+            val dst = FileManager.createPdfFile()
+            val props = WriterProperties()
+                .setStandardEncryption(
+                    password.toByteArray(),
+                    password.toByteArray(),
+                    EncryptionConstants.ALLOW_PRINTING,
+                    EncryptionConstants.STANDARD_ENCRYPTION_128
+                )
+            val pdfReader = pdfReaderOut?:PdfReader(src).also { it.setUnethicalReading(true) }
+
+            val pdfDoc = PdfDocument(
+                pdfReader,
+                PdfWriter(dst.outputStream(), props)
             )
-        val pdfDoc = PdfDocument(PdfReader(src).also { it.setUnethicalReading(true) }, PdfWriter(dst.outputStream(), props))
-        pdfDoc.close()
-        callBack(ScreenCommonEvents.ShowToast("Password added successfully"))
+            pdfDoc.close()
+            callBack(ScreenCommonEvents.ShowToast("Password added successfully"))
+        }
     }
 
+    fun removePassword(
+        resolver: ContentResolver,
+        uri: Uri,
+        pdfReaderOut: PdfReader?,
+        callBack: (ScreenCommonEvents) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val src = resolver.openInputStream(uri)
+            val dst = FileManager.createPdfFile()
+            val pdfReader = pdfReaderOut?:PdfReader(src).also { it.setUnethicalReading(true) }
+            try {
+                val pdfDoc = PdfDocument(
+                    pdfReader,
+                    PdfWriter(dst.outputStream())
+                )
+                pdfDoc.close()
+                callBack(ScreenCommonEvents.ShowToast("Password removed successfully"))
+            } catch (e: Exception) {
+                callBack(ScreenCommonEvents.ShowToast("Something gone wrong"))
+            }
+        }
+    }
 
+    suspend fun getPasswordProtectedPDFReader(
+        resolver: ContentResolver,
+        uri: Uri,
+        password: String,
+        callBack: (ScreenCommonEvents) -> Unit
+    ): PdfReader? = withContext(Dispatchers.IO) {
+        try {
+            val src = resolver.openInputStream(uri)
+            val props = ReaderProperties().setPassword(password.toByteArray())
+            val pdfReader = PdfReader(src, props).also { it.setUnethicalReading(true) }
+
+            val pdfDoc = PdfDocument(pdfReader)
+            val totalPageNumber = pdfDoc.numberOfPages
+            callBack(ScreenCommonEvents.GotTotalPageNumber(totalPageNumber))
+
+            pdfDoc.close()
+            pdfReader.close()
+            src?.close()
+
+            val src1 = resolver.openInputStream(uri)
+            val pdfReader1 = PdfReader(src1, props).also { it.setUnethicalReading(true) }
+            src1?.close()
+            return@withContext pdfReader1
+        } catch (e: BadPasswordException) {
+            callBack(ScreenCommonEvents.ShowToast("Password is incorrect"))
+            return@withContext null
+        } catch (e: Exception) {
+            callBack(ScreenCommonEvents.ShowToast("Something went wrong"))
+            return@withContext null
+        }
+    }
 }

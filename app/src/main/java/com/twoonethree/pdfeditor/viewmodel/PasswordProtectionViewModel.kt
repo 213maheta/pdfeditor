@@ -4,6 +4,7 @@ import android.content.ContentResolver
 import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.itextpdf.kernel.pdf.PdfReader
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.utilities.PdfUtilities
@@ -25,13 +26,19 @@ class PasswordProtectionViewModel: ViewModel() {
         selectedPdf.value = PdfData("", "" , null, null, 0)
     }
 
-    fun setPassword(resolver: ContentResolver, uri: Uri?)
+    fun setPassword(resolver: ContentResolver, uri: Uri?, pdfReader: PdfReader?)
     {
         uri?.let {
+            if(selectedPdf.value.totalPageNumber == 0 && pdfReader == null)
+            {
+                setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
+                return
+            }
             PdfUtilities.setPassword(
                 resolver = resolver,
                 uri = it,
                 password.value,
+                pdfReader,
                 ::setUiIntent
                 )
         }?: kotlin.run {

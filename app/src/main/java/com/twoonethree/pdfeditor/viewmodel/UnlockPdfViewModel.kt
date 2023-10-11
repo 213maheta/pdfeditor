@@ -10,12 +10,9 @@ import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.utilities.PdfUtilities
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class OrientationViewModel:ViewModel() {
+class UnlockPdfViewModel:ViewModel() {
 
     var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0))
-    val currentOrientation = mutableStateOf(0)
-    var previousOrientation = 0
-
 
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
 
@@ -28,41 +25,29 @@ class OrientationViewModel:ViewModel() {
         selectedPdf.value = PdfData("", "" , null, null, 0)
     }
 
-    fun changeOrientation(resolver: ContentResolver, uri: Uri?, pdfReader: PdfReader?)
+    fun removePassword(resolver: ContentResolver, uri: Uri?, pdfReader: PdfReader?)
     {
         uri?.let {
-            if(currentOrientation.value == previousOrientation)
+
+            if(selectedPdf.value.totalPageNumber > 0)
             {
-                setUiIntent(ScreenCommonEvents.ShowToast("Current orientation is same as selected"))
+                setUiIntent(ScreenCommonEvents.ShowToast("This file is not password protected"))
                 return
             }
+
             if(selectedPdf.value.totalPageNumber == 0 && pdfReader == null)
             {
                 setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
                 return
             }
-            PdfUtilities.changeOrientation(resolver = resolver,
+            PdfUtilities.removePassword(
+                resolver = resolver,
                 uri = it,
-                callBack = ::setUiIntent,
-                value = currentOrientation.value,
-                function = { previousOrientation = currentOrientation.value },
-                pdfReaderOut = pdfReader
+                pdfReader,
+                ::setUiIntent
             )
         }?: kotlin.run {
             setUiIntent(ScreenCommonEvents.ShowToast("Select file first"))
         }
     }
-
-
-
-    fun getOrientation(resolver: ContentResolver, uri: Uri?) {
-        uri?.let {
-            currentOrientation.value =  PdfUtilities.getOrientation(resolver, it)
-            previousOrientation = currentOrientation.value
-        }?: kotlin.run {
-            setUiIntent(ScreenCommonEvents.ShowToast("Select file first"))
-        }
-    }
-
-
 }

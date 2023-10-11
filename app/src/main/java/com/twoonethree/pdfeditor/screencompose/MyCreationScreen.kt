@@ -50,7 +50,11 @@ fun MyCreationScreen(navController: NavHostController) {
     val vm = viewModel<MyCreationViewModel>()
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
-    val onItemClick = {value:String -> navController.navigate(Destination.PdfViewerScreen.node +"/"+ StringUtilities.removeSlash(value))}
+    val onItemClick = { value: String ->
+        navController.navigate(
+            Destination.PdfViewerScreen.node + "/" + StringUtilities.removeSlash(value)
+        )
+    }
 
     LaunchedEffect(key1 = Unit) {
         vm.getAllPdf(contentResolver = contentResolver)
@@ -60,6 +64,7 @@ fun MyCreationScreen(navController: NavHostController) {
                     myToast(context, it.message)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
+
                 else -> {}
             }
         }
@@ -127,25 +132,26 @@ fun ItemPdfGridCell(pdfData: PdfData, onItemClick: (String) -> Unit) {
                         shape = RoundedCornerShape(5.dp)
                     )
             )
-        }?: kotlin.run {
-            Box(modifier = Modifier
-                .weight(0.1f)
-                .size(50.dp)
-                .padding(2.dp)
-                .border(
-                    width = 1.dp,
-                    color = colorResource(id = R.color.grey),
-                    shape = RoundedCornerShape(5.dp)
-                ))
+        } ?: kotlin.run {
+            Box(
+                modifier = Modifier
+                    .weight(0.1f)
+                    .size(50.dp)
+                    .padding(2.dp)
+                    .border(
+                        width = 1.dp,
+                        color = colorResource(id = R.color.grey),
+                        shape = RoundedCornerShape(5.dp)
+                    )
+            )
             {
                 Image(
                     painter = painterResource(id = R.drawable.splash_icon),
                     contentDescription = "",
                     modifier = Modifier
                         .align(Alignment.Center)
-                    )
-                if(pdfData.totalPageNumber == 0)
-                {
+                )
+                if (pdfData.totalPageNumber == 0) {
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = stringResource(R.string.lock),
@@ -159,8 +165,9 @@ fun ItemPdfGridCell(pdfData: PdfData, onItemClick: (String) -> Unit) {
             }
 
         }
-        Column(modifier = Modifier
-            .weight(0.8f)
+        Column(
+            modifier = Modifier
+                .weight(0.8f)
         ) {
             Text(
                 text = pdfData.name,
@@ -170,8 +177,9 @@ fun ItemPdfGridCell(pdfData: PdfData, onItemClick: (String) -> Unit) {
                 modifier = Modifier
                     .padding(start = 20.dp, top = 2.dp, bottom = 2.dp)
             )
-            Row(modifier = Modifier
-                .padding(vertical = 2.dp)
+            Row(
+                modifier = Modifier
+                    .padding(vertical = 2.dp)
             )
             {
                 Text(
@@ -191,7 +199,7 @@ fun ItemPdfGridCell(pdfData: PdfData, onItemClick: (String) -> Unit) {
                         .padding(start = 20.dp)
                 )
                 Text(
-                    text = pdfData.addedDate?:"",
+                    text = pdfData.addedDate ?: "",
                     color = Color.Black,
                     fontWeight = FontWeight.Medium,
                     fontSize = 10.sp,

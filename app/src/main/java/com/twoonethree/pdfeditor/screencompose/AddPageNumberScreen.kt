@@ -29,6 +29,7 @@ import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.AddPageNumberSelection
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.viewmodel.AddPageNumberViewModel
+import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
 
 
 @Composable
@@ -53,6 +54,14 @@ fun AddPageNumberScreen(navController: NavController)
                 is ScreenCommonEvents.ShowToast -> {
                     myToast(context, it.message)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
+                }
+                is ScreenCommonEvents.ShowPasswordDialog ->{
+                    PasswordDialogViewModel.selectedPdf.value = vm.selectedPdf.value
+                    PasswordDialogViewModel.isVisible.value = true
+                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
+                }
+                is ScreenCommonEvents.GotProtectedPdf ->{
+                    vm.addPageNumber(resolver = contentResolver, vm.selectedPdf.value.uri, it.pdfReaderOuter)
                 }
 
                 else -> {}
@@ -79,10 +88,14 @@ fun AddPageNumberScreen(navController: NavController)
     MyTopAppBar(
         titleId = R.string.add_page_number,
         backClick = { navController.navigateUp() },
-        doneClick = { vm.addPageNumber(resolver = contentResolver, vm.selectedPdf.value.uri) },
+        doneClick = { vm.addPageNumber(resolver = contentResolver, vm.selectedPdf.value.uri, null) },
         floatBtnClick = { pickPdfDocument.launch(arrayOf(context.getString(R.string.application_pdf))) },
         innerContent = innerContent,
     )
+
+    when{
+        PasswordDialogViewModel.isVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+    }
 }
 
 @Composable
