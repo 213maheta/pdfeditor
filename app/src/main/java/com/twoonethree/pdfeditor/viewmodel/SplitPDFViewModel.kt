@@ -15,8 +15,6 @@ class SplitPDFViewModel() : ViewModel() {
 
      val splitPointList = mutableStateListOf<Int>()
      var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0))
-     var totalPageNumber = 0
-     var pdfReader:PdfReader? = null
 
      val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
 
@@ -34,7 +32,7 @@ class SplitPDFViewModel() : ViewModel() {
                          selectedPdf.value,
                          FileManager.getSplitFilePath(),
                          splitPointList.toList().sortedBy { it },
-                         pdfReader,
+                         selectedPdf.value.password,
                          ::setUiIntent
                     )
                }
@@ -45,7 +43,7 @@ class SplitPDFViewModel() : ViewModel() {
      {
           if(value.isEmpty())
                return
-          if(totalPageNumber == 0)
+          if(selectedPdf.value.totalPageNumber == 0)
           {
                setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
                return
@@ -53,7 +51,7 @@ class SplitPDFViewModel() : ViewModel() {
           val splitPoint = value.toInt()
 
           when{
-               splitPoint > totalPageNumber -> setUiIntent(ScreenCommonEvents.ShowToast("Split point should be less than total page count"))
+               splitPoint > selectedPdf.value.totalPageNumber -> setUiIntent(ScreenCommonEvents.ShowToast("Split point should be less than total page count"))
                splitPoint < 1 -> setUiIntent(ScreenCommonEvents.ShowToast("Split point be should more than 0"))
                splitPointList.contains(splitPoint) -> setUiIntent(ScreenCommonEvents.ShowToast("Already added"))
                else -> splitPointList.add(splitPoint)
@@ -65,10 +63,6 @@ class SplitPDFViewModel() : ViewModel() {
           splitPointList.remove(value)
      }
 
-     fun updatePageNumber()
-     {
-          selectedPdf.value = selectedPdf.value.copy(totalPageNumber = totalPageNumber)
-     }
 
      fun removeAllSplitPoints()
      {
@@ -77,9 +71,7 @@ class SplitPDFViewModel() : ViewModel() {
 
      fun removeSelectedPdf(value:PdfData)
      {
-          totalPageNumber = 0
           selectedPdf.value = PdfData("", "" , null, null, 0)
           removeAllSplitPoints()
-          pdfReader = null
      }
 }

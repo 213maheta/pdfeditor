@@ -9,6 +9,4 @@ object MathUtilities {
         df.roundingMode = RoundingMode.CEILING
         return df.format(number).toDouble()
     }
-
-
 }

@@ -28,15 +28,15 @@ class OrientationViewModel:ViewModel() {
         selectedPdf.value = PdfData("", "" , null, null, 0)
     }
 
-    fun changeOrientation(resolver: ContentResolver, uri: Uri?, pdfReader: PdfReader?)
+    fun changeOrientation(resolver: ContentResolver)
     {
-        uri?.let {
+       selectedPdf.value.uri?.let {
             if(currentOrientation.value == previousOrientation)
             {
                 setUiIntent(ScreenCommonEvents.ShowToast("Current orientation is same as selected"))
                 return
             }
-            if(selectedPdf.value.totalPageNumber == 0 && pdfReader == null)
+            if(selectedPdf.value.totalPageNumber == 0)
             {
                 setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
                 return

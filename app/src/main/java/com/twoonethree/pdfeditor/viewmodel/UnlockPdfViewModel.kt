@@ -25,29 +25,34 @@ class UnlockPdfViewModel:ViewModel() {
         selectedPdf.value = PdfData("", "" , null, null, 0)
     }
 
-    fun removePassword(resolver: ContentResolver, uri: Uri?, pdfReader: PdfReader?)
+    fun checkPassword(resolver: ContentResolver)
     {
-        uri?.let {
+        selectedPdf.value.uri?.let {
 
             if(selectedPdf.value.totalPageNumber > 0)
             {
                 setUiIntent(ScreenCommonEvents.ShowToast("This file is not password protected"))
                 return
             }
-
-            if(selectedPdf.value.totalPageNumber == 0 && pdfReader == null)
+            if(selectedPdf.value.totalPageNumber == 0)
             {
                 setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
                 return
             }
+        }?: kotlin.run {
+            setUiIntent(ScreenCommonEvents.ShowToast("Select file first"))
+        }
+    }
+
+    fun removePassword(resolver: ContentResolver)
+    {
+        selectedPdf.value.uri?.let {
             PdfUtilities.removePassword(
                 resolver = resolver,
                 uri = it,
-                pdfReader,
+                selectedPdf.value.password,
                 ::setUiIntent
             )
-        }?: kotlin.run {
-            setUiIntent(ScreenCommonEvents.ShowToast("Select file first"))
         }
     }
 }

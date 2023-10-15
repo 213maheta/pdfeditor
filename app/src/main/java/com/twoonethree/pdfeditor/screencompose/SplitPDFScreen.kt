@@ -49,11 +49,7 @@ fun SplitPDFScreen(navController: NavHostController) {
 
     val pickPdfDocument = pdfLauncher { pdf ->
         vm.selectedPdf.value = pdf
-        vm.totalPageNumber = pdf.totalPageNumber
         vm.splitPointList.clear()
-        vm.pdfReader = null
-        if(vm.totalPageNumber == 0)
-            vm.setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
         true
     }
 
@@ -64,20 +60,15 @@ fun SplitPDFScreen(navController: NavHostController) {
                     myToast(context, it.message)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-                is ScreenCommonEvents.ShowPasswordDialog ->{
+                is ScreenCommonEvents.ShowPasswordDialog -> {
                     PasswordDialogViewModel.selectedPdf.value = vm.selectedPdf.value
                     PasswordDialogViewModel.isVisible.value = true
-                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-                is ScreenCommonEvents.GotProtectedPdf ->{
-                    vm.pdfReader = it.pdfReaderOuter
-                    vm.updatePageNumber()
+                is ScreenCommonEvents.GotPassword -> {
+                    vm.selectedPdf.value.totalPageNumber = it.totalPageNumber
+                    vm.selectedPdf.value.password = it.password
+                    PasswordDialogViewModel.isVisible.value = false
                 }
-                is ScreenCommonEvents.GotTotalPageNumber ->{
-                    vm.totalPageNumber = it.totalPageNumber
-                }
-
-
                 else -> {}
             }
         }

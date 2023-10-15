@@ -55,13 +55,14 @@ fun OrientationScreen(navController: NavController) {
                     myToast(context, it.message)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-                is ScreenCommonEvents.ShowPasswordDialog ->{
+                is ScreenCommonEvents.ShowPasswordDialog -> {
                     PasswordDialogViewModel.selectedPdf.value = vm.selectedPdf.value
                     PasswordDialogViewModel.isVisible.value = true
-                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-                is ScreenCommonEvents.GotProtectedPdf ->{
-                    vm.changeOrientation(resolver = contentResolver, vm.selectedPdf.value.uri, it.pdfReaderOuter)
+                is ScreenCommonEvents.GotPassword -> {
+                    vm.selectedPdf.value.totalPageNumber = it.totalPageNumber
+                    vm.selectedPdf.value.password = it.password
+                    PasswordDialogViewModel.isVisible.value = false
                 }
                 else -> {}
             }
@@ -87,12 +88,14 @@ fun OrientationScreen(navController: NavController) {
     MyTopAppBar(
         titleId = R.string.change_orientation,
         backClick = { navController.navigateUp() },
-        doneClick = { vm.changeOrientation(resolver = contentResolver, vm.selectedPdf.value.uri, null) },
+        doneClick = { vm.changeOrientation(resolver = contentResolver) },
         floatBtnClick = { pickPdfDocument.launch(arrayOf(context.getString(R.string.application_pdf))) },
         innerContent = innerContent,
     )
 
-
+    when{
+        PasswordDialogViewModel.isVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+    }
 
 }
 

@@ -40,12 +40,6 @@ fun MergePDFScreen(navController: NavHostController) {
                     PasswordDialogViewModel.isVisible.value = true
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-                is ScreenCommonEvents.GotTotalPageNumber ->{
-
-                }
-                is ScreenCommonEvents.GotProtectedPdf ->{
-
-                }
                 else -> {}
             }
         }

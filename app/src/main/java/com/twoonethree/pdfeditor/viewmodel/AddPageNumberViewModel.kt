@@ -31,15 +31,15 @@ class AddPageNumberViewModel:ViewModel() {
         selectedPdf.value = PdfData("", "" , null, null, 0)
     }
 
-    fun addPageNumber(resolver: ContentResolver, uri: Uri?, pdfReader: PdfReader?)
+    fun addPageNumber(resolver: ContentResolver)
     {
-        uri?.let {
-            if(selectedPdf.value.totalPageNumber == 0 && pdfReader == null)
+        selectedPdf.value.uri?.let {
+            if(selectedPdf.value.totalPageNumber == 0)
             {
                 setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
                 return
             }
-            PdfUtilities.addPageNumber(resolver, it, ::setUiIntent, ::getXYposition, pdfReader)
+            PdfUtilities.addPageNumber(resolver, it, ::setUiIntent, selectedPdf.value.password,::getXYposition)
         }?: kotlin.run {
             setUiIntent(ScreenCommonEvents.ShowToast("Select file first"))
         }

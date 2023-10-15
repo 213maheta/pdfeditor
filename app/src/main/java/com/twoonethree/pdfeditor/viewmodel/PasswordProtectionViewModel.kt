@@ -26,10 +26,10 @@ class PasswordProtectionViewModel: ViewModel() {
         selectedPdf.value = PdfData("", "" , null, null, 0)
     }
 
-    fun setPassword(resolver: ContentResolver, uri: Uri?, pdfReader: PdfReader?)
+    fun setPassword(resolver: ContentResolver)
     {
-        uri?.let {
-            if(selectedPdf.value.totalPageNumber == 0 && pdfReader == null)
+        selectedPdf.value.uri?.let {
+            if(selectedPdf.value.totalPageNumber == 0)
             {
                 setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
                 return
@@ -38,7 +38,7 @@ class PasswordProtectionViewModel: ViewModel() {
                 resolver = resolver,
                 uri = it,
                 password.value,
-                pdfReader,
+                selectedPdf.value.password,
                 ::setUiIntent
                 )
         }?: kotlin.run {

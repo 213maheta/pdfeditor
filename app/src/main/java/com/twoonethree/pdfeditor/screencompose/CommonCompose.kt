@@ -61,13 +61,6 @@ fun MyTopAppBar(
     floatBtnClick: () -> Unit,
     innerContent: @Composable (paddingvalues: PaddingValues) -> Unit
 ) {
-
-
-    LaunchedEffect(key1 = Unit)
-    {
-
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -125,10 +118,6 @@ fun MyTopAppBar(
     ) { contentPadding ->
         innerContent(contentPadding)
     }
-
-    when{
-        PasswordDialogViewModel.isVisible.value -> PasswordDialogScreen1()
-    }
 }
 
 @Composable
@@ -180,8 +169,6 @@ fun pdfLauncherMulti(onSuccess: (List<PdfData>) -> Boolean): ManagedActivityResu
 
 @Composable
 fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit) {
-
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -241,6 +228,8 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit) {
                             }
                             .align(Alignment.Center)
                             .clickable {
+                                PasswordDialogViewModel.selectedPdf.value = pdf
+                                PasswordDialogViewModel.isVisible.value = true
                             }
                     )
                 }

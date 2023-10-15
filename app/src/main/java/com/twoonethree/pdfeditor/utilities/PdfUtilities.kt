@@ -61,13 +61,17 @@ object PdfUtilities {
         srcFile: PdfData,
         dstFile: String,
         splitPointList: List<Int>,
-        pdfReaderOut: PdfReader?,
+        password: String?,
         setUiEvent: (ScreenCommonEvents) -> Unit
     ) {
         srcFile.uri?.let {
             CoroutineScope(Dispatchers.IO).launch {
                 val inputStream = resolver.openInputStream(it)
-                val pdfReader = pdfReaderOut?:PdfReader(inputStream).also { it.setUnethicalReading(true) }
+                val pdfReader = getPdfReader(
+                    resolver = resolver,
+                    uri = it,
+                    password
+                )
                 val pdfDoc = PdfDocument(pdfReader)
                 val splitDocuments = object : PdfSplitter(pdfDoc) {
                     var partNumber = 1
@@ -106,7 +110,6 @@ object PdfUtilities {
             inputStream?.close()
             pdf.close()
             return pageCount
-
         } catch (e: BadPasswordException) {
             inputStream?.close()
             reader.close()
@@ -183,13 +186,17 @@ object PdfUtilities {
         resolver: ContentResolver,
         uri: Uri,
         callBack: (ScreenCommonEvents) -> Unit,
+        password: String?,
         getXYPosition: (Float, Float) -> Pair<Float, Float>,
-        pdfReaderOut: PdfReader?,
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             val src = resolver.openInputStream(uri)
             val dst = FileManager.createPdfFile()
-            val pdfReader = pdfReaderOut?:PdfReader(src).also { it.setUnethicalReading(true) }
+            val pdfReader = getPdfReader(
+                resolver = resolver,
+                uri = uri,
+                password
+            )
             val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
             val doc = Document(pdfDoc)
             val numberOfPages = pdfDoc.numberOfPages
@@ -271,7 +278,7 @@ object PdfUtilities {
         resolver: ContentResolver,
         uri: Uri,
         password: String,
-        pdfReaderOut: PdfReader?,
+        prePassword: String?,
         callBack: (ScreenCommonEvents) -> Unit
     ) {
         CoroutineScope(Dispatchers.IO).launch {
@@ -284,7 +291,11 @@ object PdfUtilities {
                     EncryptionConstants.ALLOW_PRINTING,
                     EncryptionConstants.STANDARD_ENCRYPTION_128
                 )
-            val pdfReader = pdfReaderOut?:PdfReader(src).also { it.setUnethicalReading(true) }
+            val pdfReader = getPdfReader(
+                resolver = resolver,
+                uri = uri,
+                prePassword
+            )
 
             val pdfDoc = PdfDocument(
                 pdfReader,
@@ -298,13 +309,16 @@ object PdfUtilities {
     fun removePassword(
         resolver: ContentResolver,
         uri: Uri,
-        pdfReaderOut: PdfReader?,
+        password: String?,
         callBack: (ScreenCommonEvents) -> Unit
     ) {
         CoroutineScope(Dispatchers.IO).launch {
-            val src = resolver.openInputStream(uri)
             val dst = FileManager.createPdfFile()
-            val pdfReader = pdfReaderOut?:PdfReader(src).also { it.setUnethicalReading(true) }
+            val pdfReader = getPdfReader(
+            resolver = resolver,
+            uri = uri,
+            password = password
+        )
             try {
                 val pdfDoc = PdfDocument(
                     pdfReader,
@@ -332,8 +346,8 @@ object PdfUtilities {
         resolver: ContentResolver,
         uri: Uri,
         password: String,
-        callBack: (ScreenCommonEvents) -> Unit)
-    {
+        callBack: (ScreenCommonEvents) -> Unit
+    ) {
         try {
             val src = resolver.openInputStream(uri)
             val props = ReaderProperties().setPassword(password.toByteArray())
@@ -341,7 +355,12 @@ object PdfUtilities {
 
             val pdfDoc = PdfDocument(pdfReader)
             val totalPageNumber = pdfDoc.numberOfPages
-            callBack(ScreenCommonEvents.GotPassword(totalPageNumber = totalPageNumber))
+            callBack(
+                ScreenCommonEvents.GotPassword(
+                    totalPageNumber = totalPageNumber,
+                    password = password
+                )
+            )
             pdfDoc.close()
             pdfReader.close()
             src?.close()

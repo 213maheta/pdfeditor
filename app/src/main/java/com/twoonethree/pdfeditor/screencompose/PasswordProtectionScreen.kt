@@ -35,14 +35,16 @@ fun PasswordProtectionScreen(navController: NavController)
                     myToast(context, it.message)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-                is ScreenCommonEvents.ShowPasswordDialog ->{
+                is ScreenCommonEvents.ShowPasswordDialog -> {
                     PasswordDialogViewModel.selectedPdf.value = vm.selectedPdf.value
                     PasswordDialogViewModel.isVisible.value = true
-                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-                is ScreenCommonEvents.GotProtectedPdf ->{
-                    vm.setPassword(contentResolver, vm.selectedPdf.value.uri, it.pdfReaderOuter)
+                is ScreenCommonEvents.GotPassword -> {
+                    vm.selectedPdf.value.totalPageNumber = it.totalPageNumber
+                    vm.selectedPdf.value.password = it.password
+                    PasswordDialogViewModel.isVisible.value = false
                 }
+
 
                 else -> {}
             }
@@ -70,7 +72,7 @@ fun PasswordProtectionScreen(navController: NavController)
     MyTopAppBar(
         titleId = R.string.password_protection,
         backClick = { navController.navigateUp() },
-        doneClick = { vm.setPassword(contentResolver, vm.selectedPdf.value.uri, null) },
+        doneClick = { vm.setPassword(contentResolver) },
         floatBtnClick = { pickPdfDocument.launch(arrayOf(context.getString(R.string.application_pdf))) },
         innerContent = innerContent,
     )

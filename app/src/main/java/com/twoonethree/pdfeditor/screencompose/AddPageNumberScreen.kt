@@ -55,15 +55,15 @@ fun AddPageNumberScreen(navController: NavController)
                     myToast(context, it.message)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-                is ScreenCommonEvents.ShowPasswordDialog ->{
+                is ScreenCommonEvents.ShowPasswordDialog -> {
                     PasswordDialogViewModel.selectedPdf.value = vm.selectedPdf.value
                     PasswordDialogViewModel.isVisible.value = true
-                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-                is ScreenCommonEvents.GotProtectedPdf ->{
-                    vm.addPageNumber(resolver = contentResolver, vm.selectedPdf.value.uri, it.pdfReaderOuter)
+                is ScreenCommonEvents.GotPassword -> {
+                    vm.selectedPdf.value.totalPageNumber = it.totalPageNumber
+                    vm.selectedPdf.value.password = it.password
+                    PasswordDialogViewModel.isVisible.value = false
                 }
-
                 else -> {}
             }
         }
@@ -88,7 +88,7 @@ fun AddPageNumberScreen(navController: NavController)
     MyTopAppBar(
         titleId = R.string.add_page_number,
         backClick = { navController.navigateUp() },
-        doneClick = { vm.addPageNumber(resolver = contentResolver, vm.selectedPdf.value.uri, null) },
+        doneClick = { vm.addPageNumber(resolver = contentResolver) },
         floatBtnClick = { pickPdfDocument.launch(arrayOf(context.getString(R.string.application_pdf))) },
         innerContent = innerContent,
     )
