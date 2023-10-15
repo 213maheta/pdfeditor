@@ -58,6 +58,7 @@ fun AddPageNumberScreen(navController: NavController)
                 is ScreenCommonEvents.ShowPasswordDialog -> {
                     PasswordDialogViewModel.selectedPdf.value = vm.selectedPdf.value
                     PasswordDialogViewModel.isVisible.value = true
+                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.GotPassword -> {
                     vm.selectedPdf.value.totalPageNumber = it.totalPageNumber

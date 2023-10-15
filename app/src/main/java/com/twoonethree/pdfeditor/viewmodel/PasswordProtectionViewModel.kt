@@ -34,6 +34,11 @@ class PasswordProtectionViewModel: ViewModel() {
                 setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
                 return
             }
+            if(password.value.isEmpty())
+            {
+                setUiIntent(ScreenCommonEvents.ShowToast("Password is blank"))
+                return
+            }
             PdfUtilities.setPassword(
                 resolver = resolver,
                 uri = it,
