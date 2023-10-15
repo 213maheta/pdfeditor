@@ -12,15 +12,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,7 +25,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -40,6 +35,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,12 +45,12 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.utilities.FileUtilities
+import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,6 +61,13 @@ fun MyTopAppBar(
     floatBtnClick: () -> Unit,
     innerContent: @Composable (paddingvalues: PaddingValues) -> Unit
 ) {
+
+
+    LaunchedEffect(key1 = Unit)
+    {
+
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -122,6 +125,10 @@ fun MyTopAppBar(
     ) { contentPadding ->
         innerContent(contentPadding)
     }
+
+    when{
+        PasswordDialogViewModel.isVisible.value -> PasswordDialogScreen1()
+    }
 }
 
 @Composable
@@ -173,6 +180,8 @@ fun pdfLauncherMulti(onSuccess: (List<PdfData>) -> Boolean): ManagedActivityResu
 
 @Composable
 fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit) {
+
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -231,6 +240,8 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit) {
                                 alpha = 0.7f
                             }
                             .align(Alignment.Center)
+                            .clickable {
+                            }
                     )
                 }
             }
@@ -270,7 +281,7 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit) {
                         .padding(start = 20.dp)
                 )
                 Text(
-                    text = pdf.addedDate ?: "",
+                    text = pdf.date ?: "",
                     color = Color.Black,
                     fontWeight = FontWeight.Medium,
                     fontSize = 10.sp,

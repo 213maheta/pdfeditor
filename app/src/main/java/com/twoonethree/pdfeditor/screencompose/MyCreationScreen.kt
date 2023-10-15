@@ -199,7 +199,7 @@ fun ItemPdfGridCell(pdfData: PdfData, onItemClick: (String) -> Unit) {
                         .padding(start = 20.dp)
                 )
                 Text(
-                    text = pdfData.addedDate ?: "",
+                    text = pdfData.date ?: "",
                     color = Color.Black,
                     fontWeight = FontWeight.Medium,
                     fontSize = 10.sp,

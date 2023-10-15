@@ -100,7 +100,7 @@ object FileUtilities {
                                 uri = file.toUri(),
                                 thumbnail = imageBitmap,
                                 totalPageNumber = totalPageNumber,
-                                addedDate = dateTime
+                                date = dateTime
                             )
                             pdfList.add(pdfData)
                         } while (cursor.moveToNext())

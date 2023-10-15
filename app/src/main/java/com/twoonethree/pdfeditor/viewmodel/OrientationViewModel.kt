@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class OrientationViewModel:ViewModel() {
 
-    var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0))
+    var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0, null, null))
     val currentOrientation = mutableStateOf(0)
     var previousOrientation = 0
 
@@ -46,7 +46,7 @@ class OrientationViewModel:ViewModel() {
                 callBack = ::setUiIntent,
                 value = currentOrientation.value,
                 function = { previousOrientation = currentOrientation.value },
-                pdfReaderOut = pdfReader
+                password = selectedPdf.value.password
             )
         }?: kotlin.run {
             setUiIntent(ScreenCommonEvents.ShowToast("Select file first"))

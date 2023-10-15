@@ -1,6 +1,7 @@
 package com.twoonethree.pdfeditor.viewmodel
 
 import android.content.ContentResolver
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,7 +33,7 @@ class PasswordDialogViewModel:ViewModel() {
         resolver: ContentResolver,
         callBack: (ScreenCommonEvents) -> Unit
     ) = viewModelScope.launch {
-        val pdfReader = PdfUtilities.getPasswordProtectedPDFReader(
+        /*val pdfReader = PdfUtilities.getPasswordProtectedPDFReader(
                 resolver = resolver,
                 uri = selectedPdf.value.uri!!,
                 password = password.value,
@@ -40,6 +41,19 @@ class PasswordDialogViewModel:ViewModel() {
             )
         pdfReader?.let {
             callBack(ScreenCommonEvents.GotProtectedPdf(it))
+        }*/
+    }
+
+    fun checkPassword(
+        contentResolver: ContentResolver,
+        ) {
+        selectedPdf.value.uri?.let {
+            PdfUtilities.checkPdfPassword(
+                contentResolver,
+                uri = it,
+                password = password.value,
+                ::setUiIntent
+            )
         }
     }
 }

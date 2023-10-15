@@ -19,6 +19,7 @@ import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.viewmodel.MergePdfViewModel
+import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,6 +35,16 @@ fun MergePDFScreen(navController: NavHostController) {
                 is ScreenCommonEvents.ShowToast -> {
                     myToast(context, it.message)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
+                }
+                is ScreenCommonEvents.ShowPasswordDialog ->{
+                    PasswordDialogViewModel.isVisible.value = true
+                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
+                }
+                is ScreenCommonEvents.GotTotalPageNumber ->{
+
+                }
+                is ScreenCommonEvents.GotProtectedPdf ->{
+
                 }
                 else -> {}
             }
@@ -60,6 +71,10 @@ fun MergePDFScreen(navController: NavHostController) {
         floatBtnClick = { pickPdfDocument.launch(context.getString(R.string.application_pdf)) },
         innerContent = innerContent,
     )
+
+    when{
+        PasswordDialogViewModel.isVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+    }
 }
 
 @Composable

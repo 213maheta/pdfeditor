@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import com.itextpdf.kernel.crypto.BadPasswordException
@@ -23,10 +22,8 @@ import com.itextpdf.layout.property.TextAlignment
 import com.itextpdf.layout.property.VerticalAlignment
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
-import com.twoonethree.pdfeditor.screencompose.pdfLauncher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -223,14 +220,17 @@ object PdfUtilities {
         uri: Uri,
         callBack: (ScreenCommonEvents) -> Unit,
         value: Int,
-        pdfReaderOut: PdfReader?,
+        password: String?,
         function: () -> Unit,
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             val src = resolver.openInputStream(uri)
             val dst = FileManager.createPdfFile()
-
-            val pdfReader = pdfReaderOut?:PdfReader(src).also { it.setUnethicalReading(true) }
+            val pdfReader = getPdfReader(
+                resolver = resolver,
+                uri = uri,
+                password = password
+            )
             val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
             val doc = Document(pdfDoc)
             val numberOfPages = pdfDoc.numberOfPages
@@ -252,17 +252,17 @@ object PdfUtilities {
         resolver: ContentResolver,
         uri: Uri,
     ): Int {
-        try {
+        return try {
             val src = resolver.openInputStream(uri)
             val pdfDoc = PdfDocument(PdfReader(src).also { it.setUnethicalReading(true) })
             val orientaion = pdfDoc.firstPage.rotation
             src?.close()
             pdfDoc.close()
-            return orientaion
+            orientaion
         } catch (e: BadPasswordException) {
-            return -1
+            -1
         } catch (e: Exception) {
-            return -2
+            -2
         }
 
     }
@@ -318,12 +318,22 @@ object PdfUtilities {
         }
     }
 
-    suspend fun getPasswordProtectedPDFReader(
+    fun getPdfReader(
+        resolver: ContentResolver,
+        uri: Uri,
+        password: String?,
+    ): PdfReader {
+        val src = resolver.openInputStream(uri)
+        val props = ReaderProperties().setPassword(password?.toByteArray())
+        return PdfReader(src, props).also { it.setUnethicalReading(true) }
+    }
+
+    fun checkPdfPassword(
         resolver: ContentResolver,
         uri: Uri,
         password: String,
-        callBack: (ScreenCommonEvents) -> Unit
-    ): PdfReader? = withContext(Dispatchers.IO) {
+        callBack: (ScreenCommonEvents) -> Unit)
+    {
         try {
             val src = resolver.openInputStream(uri)
             val props = ReaderProperties().setPassword(password.toByteArray())
@@ -331,7 +341,30 @@ object PdfUtilities {
 
             val pdfDoc = PdfDocument(pdfReader)
             val totalPageNumber = pdfDoc.numberOfPages
-            callBack(ScreenCommonEvents.GotTotalPageNumber(totalPageNumber))
+            callBack(ScreenCommonEvents.GotPassword(totalPageNumber = totalPageNumber))
+            pdfDoc.close()
+            pdfReader.close()
+            src?.close()
+        } catch (e: BadPasswordException) {
+            callBack(ScreenCommonEvents.ShowToast("Password is incorrect"))
+        } catch (e: Exception) {
+            callBack(ScreenCommonEvents.ShowToast("Something went wrong"))
+        }
+    }
+
+    suspend fun getPasswordProtectedPDFReader(
+        resolver: ContentResolver,
+        uri: Uri,
+        password: String,
+        callBack: (ScreenCommonEvents) -> Unit
+    ) = withContext(Dispatchers.IO) {
+        try {
+            val src = resolver.openInputStream(uri)
+            val props = ReaderProperties().setPassword(password.toByteArray())
+            val pdfReader = PdfReader(src, props).also { it.setUnethicalReading(true) }
+
+            val pdfDoc = PdfDocument(pdfReader)
+            val totalPageNumber = pdfDoc.numberOfPages
 
             pdfDoc.close()
             pdfReader.close()

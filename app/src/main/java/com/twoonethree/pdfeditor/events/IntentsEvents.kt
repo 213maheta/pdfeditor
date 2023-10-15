@@ -8,6 +8,9 @@ sealed class ScreenCommonEvents{
     data object ShowPasswordDialog:ScreenCommonEvents()
     data class GotProtectedPdf(val pdfReaderOuter:PdfReader):ScreenCommonEvents()
     data class GotTotalPageNumber(val totalPageNumber: Int):ScreenCommonEvents()
+
+    data class GotPassword(val totalPageNumber: Int):ScreenCommonEvents()
+
     data object EMPTY:ScreenCommonEvents()
 }
 

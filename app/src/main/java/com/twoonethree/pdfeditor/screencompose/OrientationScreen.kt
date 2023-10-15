@@ -92,9 +92,7 @@ fun OrientationScreen(navController: NavController) {
         innerContent = innerContent,
     )
 
-    when{
-        PasswordDialogViewModel.isVisible.value -> PasswordDialogScreen(vm::setUiIntent)
-    }
+
 
 }
 
