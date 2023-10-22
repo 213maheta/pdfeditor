@@ -13,5 +13,5 @@ sealed class Destination(val node: String) {
     data object OrientationScreen : Destination(node = ScreenName.ORIENTATION_SCREEN)
     data object PasswordProtectionScreen : Destination(node = ScreenName.PASSWORD_PROTECTION_SCREEN)
     data object UnlockPasswordScreen : Destination(node = ScreenName.UNLOCK_PASSWORD_SCREEN)
-    data object PasswordDialogScreen : Destination(node = ScreenName.PASSWORD_DIALOG_SCREEN)
+    data object OrganizePdfScreen : Destination(node = ScreenName.ORGANIZE_PDF_SCREEN)
 }

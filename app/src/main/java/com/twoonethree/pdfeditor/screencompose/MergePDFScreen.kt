@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,9 +38,17 @@ fun MergePDFScreen(navController: NavHostController) {
                     myToast(context, it.message)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-                is ScreenCommonEvents.ShowPasswordDialog ->{
+                is ScreenCommonEvents.ShowPasswordDialog -> {
+                    PasswordDialogViewModel.selectedPdf.value = vm.pdfList[vm.lockedIndex]
                     PasswordDialogViewModel.isVisible.value = true
+                    PasswordDialogViewModel.selectedIndex = vm.lockedIndex
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
+                }
+                is ScreenCommonEvents.GotPassword -> {
+                    vm.lockedIndex = PasswordDialogViewModel.selectedIndex
+                    vm.pdfList[vm.lockedIndex].totalPageNumber = it.totalPageNumber
+                    vm.pdfList[vm.lockedIndex].password = it.password
+                    PasswordDialogViewModel.isVisible.value = false
                 }
                 else -> {}
             }
@@ -78,8 +88,8 @@ fun ReOrderColumnList(
     val vm = viewModel<MergePdfViewModel>()
 
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
-        items(pdfList) { pdf ->
-            ItemPDF(pdf = pdf, vm::removePdf)
+        itemsIndexed(pdfList) { index, pdf ->
+            ItemPDF(pdf = pdf, vm::removePdf, index)
         }
     }
 }

@@ -14,9 +14,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -168,7 +171,7 @@ fun pdfLauncherMulti(onSuccess: (List<PdfData>) -> Boolean): ManagedActivityResu
 
 
 @Composable
-fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit) {
+fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index:Int = 0) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -218,23 +221,8 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit) {
                     modifier = Modifier
                         .align(Alignment.Center)
                 )
-                if (pdf.totalPageNumber == 0) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = stringResource(R.string.lock),
-                        modifier = Modifier
-                            .graphicsLayer {
-                                alpha = 0.7f
-                            }
-                            .align(Alignment.Center)
-                            .clickable {
-                                PasswordDialogViewModel.selectedPdf.value = pdf
-                                PasswordDialogViewModel.isVisible.value = true
-                            }
-                    )
-                }
-            }
 
+            }
         }
         Column(
             modifier = Modifier
@@ -287,12 +275,25 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit) {
                 )
             }
         }
+        if (pdf.totalPageNumber == 0) {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = stringResource(R.string.lock),
+                modifier = Modifier
+                    .weight(0.1f)
+                    .clickable {
+                        PasswordDialogViewModel.selectedPdf.value = pdf
+                        PasswordDialogViewModel.isVisible.value = true
+                        PasswordDialogViewModel.selectedIndex = index
+                    }
+            )
+        }
         Icon(
             imageVector = Icons.Default.Delete,
             contentDescription = "Delete",
             tint = Color.Black,
             modifier = Modifier
-                .weight(0.2f)
+                .weight(0.1f)
                 .clickable {
                     removePdf(pdf)
                 }
@@ -321,4 +322,22 @@ fun GetPassword(value: String, onValueChange: (String) -> Unit) {
 
 fun myToast(context: Context, message: String) {
     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+}
+
+@Composable
+fun ReOrderableList(
+    onDelete: (value: Int) -> Unit,
+    changeOrder: (index1: Int, index2: Int) -> Unit
+)
+{
+    val tempList = arrayListOf<Int>(1,2,3,4,5,6,7,8,9,10,11,12)
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+    ) {
+        itemsIndexed(tempList) { index, value ->
+            ItemPageNumer(index, value, onDelete, changeOrder)
+        }
+    }
 }

@@ -15,6 +15,7 @@ class PasswordDialogViewModel:ViewModel() {
     companion object{
         var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0))
         val isVisible = mutableStateOf(false)
+        var selectedIndex = -1
     }
 
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)

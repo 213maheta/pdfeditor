@@ -13,6 +13,7 @@ class MergePdfViewModel() : ViewModel() {
 
     val pdfList = mutableStateListOf<PdfData>()
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
+    var lockedIndex = -1
 
     fun saveMergedPdf(contentResolver: ContentResolver) {
         when (pdfList.toList().size) {
@@ -22,19 +23,35 @@ class MergePdfViewModel() : ViewModel() {
                 return
             }
             else -> {
-                val isSuccess = PdfUtilities.mergePdf(
-                    contentResolver,
-                    pdfList.toList(),
-                    FileManager.createPdfFile()
-                )
-                val message = if (isSuccess) "Merged successfully" else "Something went wrong"
-                setUiIntent(ScreenCommonEvents.ShowToast(message))
+                if(checkAllUnlocked())
+                {
+                    val isSuccess = PdfUtilities.mergePdf(
+                        contentResolver,
+                        pdfList.toList(),
+                        FileManager.createPdfFile()
+                    )
+                    val message = if (isSuccess) "Merged successfully" else "Something went wrong"
+                    setUiIntent(ScreenCommonEvents.ShowToast(message))
+                }
             }
         }
     }
 
     fun setUiIntent(value: ScreenCommonEvents) {
         uiIntent.value = value
+    }
+
+    fun checkAllUnlocked():Boolean
+    {
+        pdfList.forEachIndexed{ index, pdfData ->
+            if(pdfData.totalPageNumber == 0)
+            {
+                lockedIndex = index
+                setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
+                return false
+            }
+        }
+        return true
     }
 
     fun removePdf(value: PdfData)

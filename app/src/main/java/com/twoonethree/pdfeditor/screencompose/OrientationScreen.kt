@@ -26,6 +26,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.twoonethree.pdfeditor.R
@@ -121,15 +122,15 @@ fun OrientationCard(angle: Int, isSelected: (Int) -> Boolean, onOrientationClick
     val selected = isSelected(angle)
     Box(
         modifier = Modifier
-            .width(100.dp)
-            .height(100.dp)
+            .width(80.dp)
+            .height(80.dp)
             .padding(8.dp)
             .background(
                 color = if (selected) colorResource(id = R.color.orange) else colorResource(id = R.color.white),
                 shape = RoundedCornerShape(8.dp)
             )
             .border(
-                width = 4.dp,
+                width = 2.dp,
                 color = colorResource(id = R.color.orange),
                 shape = RoundedCornerShape(8.dp)
             )
@@ -139,8 +140,9 @@ fun OrientationCard(angle: Int, isSelected: (Int) -> Boolean, onOrientationClick
     ){
         Text(
             text = angle.toString(),
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
+            fontSize = 14.sp,
             color = if(selected) colorResource(id = R.color.white) else colorResource(id = R.color.orange),
             modifier = Modifier
                 .height(100.dp)

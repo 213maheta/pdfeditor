@@ -12,6 +12,7 @@ object ScreenName {
     const val PASSWORD_PROTECTION_SCREEN = "password_protection_screen"
     const val UNLOCK_PASSWORD_SCREEN = "unlock_password_screen"
     const val PASSWORD_DIALOG_SCREEN = "password_dialog_screen"
+    const val ORGANIZE_PDF_SCREEN = "organize_pdf_screen"
 }
 
 object StringUtilities {

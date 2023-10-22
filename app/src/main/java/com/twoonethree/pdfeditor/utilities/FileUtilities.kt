@@ -51,7 +51,7 @@ object FileUtilities {
                 MediaStore.Files.FileColumns.MIME_TYPE,
             )
 
-            val sortOrder = MediaStore.Files.FileColumns.DATE_MODIFIED + " DESC"
+            val sortOrder = MediaStore.Files.FileColumns.DATE_ADDED + " DESC"
 
             val selection = MediaStore.Files.FileColumns.MIME_TYPE + " = ?"
 

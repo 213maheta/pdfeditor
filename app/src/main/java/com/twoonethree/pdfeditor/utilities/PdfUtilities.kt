@@ -6,6 +6,7 @@ import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import com.itextpdf.io.source.RandomAccessSourceFactory
 import com.itextpdf.kernel.crypto.BadPasswordException
 import com.itextpdf.kernel.pdf.EncryptionConstants
 import com.itextpdf.kernel.pdf.PdfDocument
@@ -26,7 +27,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileNotFoundException
 
@@ -40,9 +40,12 @@ object PdfUtilities {
         fileList.forEach { pdfData ->
             pdfData.uri?.let { uri ->
                 val inputStream = resolver.openInputStream(uri)
-                val srcPdf = PdfDocument(PdfReader(inputStream).also {
-                    it.setUnethicalReading(true)
-                })
+                val pdfReader = getPdfReader(
+                    resolver = resolver,
+                    uri = uri,
+                    pdfData.password
+                )
+                val srcPdf = PdfDocument(pdfReader)
                 merger.merge(srcPdf, 1, srcPdf.numberOfPages)
                 inputStream?.close()
                 srcPdf.close()
@@ -100,9 +103,9 @@ object PdfUtilities {
     }
 
     fun getTotalPageNumber(resolver: ContentResolver, uri: Uri): Int {
-        val inputStream = resolver.openInputStream(uri)
-        val reader = PdfReader(inputStream)
         try {
+            val inputStream = resolver.openInputStream(uri)
+            val reader = PdfReader(inputStream)
             val pdf = PdfDocument(reader)
             val pageCount = pdf.numberOfPages
 
@@ -111,12 +114,8 @@ object PdfUtilities {
             pdf.close()
             return pageCount
         } catch (e: BadPasswordException) {
-            inputStream?.close()
-            reader.close()
             return 0
         } catch (e: Exception) {
-            inputStream?.close()
-            reader.close()
             return -1
         }
     }
@@ -371,34 +370,32 @@ object PdfUtilities {
         }
     }
 
-    suspend fun getPasswordProtectedPDFReader(
+
+    fun reOrderPdf(
         resolver: ContentResolver,
         uri: Uri,
-        password: String,
-        callBack: (ScreenCommonEvents) -> Unit
-    ) = withContext(Dispatchers.IO) {
-        try {
-            val src = resolver.openInputStream(uri)
-            val props = ReaderProperties().setPassword(password.toByteArray())
-            val pdfReader = PdfReader(src, props).also { it.setUnethicalReading(true) }
+        password: String?,
+        pageOrderList:List<Int>,
+        callBack: (ScreenCommonEvents) -> Unit,
+    )
+    {
+        val inputStream = resolver.openInputStream(uri)
+        val dst = FileManager.createPdfFile()
+        val pdfReader = getPdfReader(
+            resolver = resolver,
+            uri = uri,
+            password
+        )
+        val srcDoc = PdfDocument(pdfReader)
+        val dstDoc = PdfDocument(PdfWriter(dst))
 
-            val pdfDoc = PdfDocument(pdfReader)
-            val totalPageNumber = pdfDoc.numberOfPages
+        dstDoc.initializeOutlines()
 
-            pdfDoc.close()
-            pdfReader.close()
-            src?.close()
+        srcDoc.copyPagesTo(pageOrderList, dstDoc)
 
-            val src1 = resolver.openInputStream(uri)
-            val pdfReader1 = PdfReader(src1, props).also { it.setUnethicalReading(true) }
-            src1?.close()
-            return@withContext pdfReader1
-        } catch (e: BadPasswordException) {
-            callBack(ScreenCommonEvents.ShowToast("Password is incorrect"))
-            return@withContext null
-        } catch (e: Exception) {
-            callBack(ScreenCommonEvents.ShowToast("Something went wrong"))
-            return@withContext null
-        }
+        inputStream?.close()
+        srcDoc.close()
+        dstDoc.close()
+        callBack(ScreenCommonEvents.ShowToast("PDF reorder successfully"))
     }
 }

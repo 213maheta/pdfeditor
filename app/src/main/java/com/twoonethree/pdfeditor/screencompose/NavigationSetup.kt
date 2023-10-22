@@ -55,13 +55,15 @@ fun Navingation() {
         composable(Destination.UnlockPasswordScreen.node) {
             UnlockPdfScreen(navController)
         }
+        composable(Destination.OrganizePdfScreen.node) {
+            OrganizePdfScreen(navController)
+        }
     }
 }
 
 
 @Composable
 fun SplashScreen(navController: NavHostController) {
-
     AnimatedVisibility(
         visible = true,
         enter = scaleIn(),

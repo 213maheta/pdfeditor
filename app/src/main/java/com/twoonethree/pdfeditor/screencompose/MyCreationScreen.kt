@@ -43,6 +43,7 @@ import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.utilities.StringUtilities
 import com.twoonethree.pdfeditor.viewmodel.MyCreationViewModel
+import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
 
 @Composable
 fun MyCreationScreen(navController: NavHostController) {
@@ -151,17 +152,6 @@ fun ItemPdfGridCell(pdfData: PdfData, onItemClick: (String) -> Unit) {
                     modifier = Modifier
                         .align(Alignment.Center)
                 )
-                if (pdfData.totalPageNumber == 0) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = stringResource(R.string.lock),
-                        modifier = Modifier
-                            .graphicsLayer {
-                                alpha = 0.7f
-                            }
-                            .align(Alignment.Center)
-                    )
-                }
             }
 
         }
@@ -216,6 +206,17 @@ fun ItemPdfGridCell(pdfData: PdfData, onItemClick: (String) -> Unit) {
                 )
             }
         }
+
+        if (pdfData.totalPageNumber == 0) {
+            Icon(
+                imageVector = Icons.Default.Lock,
+                contentDescription = stringResource(R.string.lock),
+                modifier = Modifier
+                    .weight(0.1f)
+
+            )
+        }
+
         Icon(
             imageVector = Icons.Default.Menu,
             contentDescription = stringResource(R.string.menu),

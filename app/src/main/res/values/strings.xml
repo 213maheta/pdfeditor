@@ -10,6 +10,7 @@
     <string name="change_orientation">Change Orientation</string>
     <string name="password_protection">Password Protection</string>
     <string name="unlock_pdf">Unlock PDF</string>
+    <string name="organize_pdf">Organize PDF</string>
 
     <string name="application_pdf">application/pdf</string>
     <string name="delete">delete</string>
@@ -19,4 +20,6 @@
     <string name="my_creation">My Creation</string>
     <string name="pdf_viewer">Pdf Viewer</string>
     <string name="enter_password">Enter Password</string>
+    <string name="down">Down</string>
+    <string name="up">Up</string>
 </resources>
