@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -39,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
+import com.twoonethree.pdfeditor.reorderblelist.ReorderbleVerticalList
 import com.twoonethree.pdfeditor.viewmodel.OrganizePdfViewModel
 import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
 
@@ -94,7 +94,8 @@ fun OrganizePdfScreen(navController: NavController)
                         PageNumberList(vm.pageNumberList.toList(), onDelete, changeOrder)
                     }
                 }
-                ReOrderableList(onDelete, changeOrder)
+
+                ReorderbleVerticalList()
             }
         }
 
@@ -113,7 +114,7 @@ fun OrganizePdfScreen(navController: NavController)
 
 @Composable
 fun PageNumberList(
-    PageNumberList: List<Int>,
+    pageNumberList: List<Int>,
     onDelete: (value: Int) -> Unit,
     changeOrder: (index1: Int, index2: Int) -> Unit
 ) {
@@ -122,10 +123,11 @@ fun PageNumberList(
             .fillMaxWidth()
             .fillMaxHeight()
     ) {
-        itemsIndexed(PageNumberList) { index, value ->
+        itemsIndexed(pageNumberList) { index, value ->
             ItemPageNumer(index, value, onDelete, changeOrder)
         }
     }
+
 }
 
 @Composable
@@ -174,7 +176,7 @@ fun ItemPageNumer(
             modifier = Modifier
                 .padding(end = 20.dp)
                 .clickable {
-                    changeOrder(index, index-1)
+                    changeOrder(index, index - 1)
                 }
                 .weight(0.2f)
         )
@@ -185,7 +187,7 @@ fun ItemPageNumer(
             modifier = Modifier
                 .padding(end = 20.dp)
                 .clickable {
-                    changeOrder(index, index+1)
+                    changeOrder(index, index + 1)
                 }
                 .weight(0.2f)
         )
