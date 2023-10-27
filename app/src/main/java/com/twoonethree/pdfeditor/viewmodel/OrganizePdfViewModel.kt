@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
-import com.twoonethree.pdfeditor.utilities.PdfUtilities
+import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class OrganizePdfViewModel() : ViewModel() {

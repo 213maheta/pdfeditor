@@ -1,4 +1,4 @@
-package com.twoonethree.pdfeditor.utilities
+package com.twoonethree.pdfeditor.pdfutilities
 
 import android.content.ContentResolver
 import android.graphics.Bitmap
@@ -23,6 +23,7 @@ import com.itextpdf.layout.property.TextAlignment
 import com.itextpdf.layout.property.VerticalAlignment
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
+import com.twoonethree.pdfeditor.utilities.FileManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -120,21 +121,7 @@ object PdfUtilities {
         }
     }
 
-    fun getTotalPageNumber(pdfReader: PdfReader): Int {
-        try {
-            val pdf = PdfDocument(pdfReader)
-            val pageCount = pdf.numberOfPages
 
-            pdfReader.close()
-            pdf.close()
-            return pageCount
-
-        } catch (e: BadPasswordException) {
-            return 0
-        } catch (e: Exception) {
-            return -1
-        }
-    }
 
     fun getPdfThumbnail(resolver: ContentResolver, uri: Uri): ImageBitmap? {
         resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->

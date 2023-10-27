@@ -1,8 +1,7 @@
-package com.twoonethree.pdfeditor.reorderblelist
+package com.twoonethree.lazylist.reorder
 
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
@@ -12,7 +11,6 @@ import kotlinx.coroutines.launch
 
 class ReorderableViewModel:ViewModel() {
 
-    val tempList = mutableStateListOf(1,2,3,4,5,6,7,8,9,10)
     lateinit var listState:LazyListState
     val selectedIndex = mutableStateOf(-1)
     val hoverIndex = mutableStateOf(-1)
@@ -22,14 +20,13 @@ class ReorderableViewModel:ViewModel() {
     val offsetVertical = mutableStateOf(0f)
     val draggedValue = mutableStateOf(0f)
     var scrollLock = false
+    lateinit var swap:(selected:Int, hover:Int)->Unit
     fun swapPos(down: Boolean)
     {
         if(hoverIndex.value == selectedIndex.value)
            return
 
-        val temp = tempList[selectedIndex.value]
-        tempList[selectedIndex.value] = tempList[hoverIndex.value]
-        tempList[hoverIndex.value] = temp
+        swap(selectedIndex.value, hoverIndex.value)
         selectedIndex.value = hoverIndex.value
 
         delta = if(down)offsetVertical.value + size/2 else offsetVertical.value - size/2

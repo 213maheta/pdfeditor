@@ -2,8 +2,6 @@ package com.twoonethree.pdfeditor.screencompose
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -22,12 +21,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -36,9 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.twoonethree.lazylist.reorder.ReorderableViewModel
+import com.twoonethree.lazylist.reorder.reOrderableItem
+import com.twoonethree.lazylist.reorder.reOrderableList
+import com.twoonethree.lazylist.reorder.swap
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
-import com.twoonethree.pdfeditor.reorderblelist.ReorderbleVerticalList
 import com.twoonethree.pdfeditor.viewmodel.OrganizePdfViewModel
 import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
 
@@ -91,11 +90,9 @@ fun OrganizePdfScreen(navController: NavController)
                 vm.selectedPdf.value.let { pdfData ->
                     pdfData.uri?.let {
                         ItemPDF(pdfData, vm::removeSelectedPdf)
-                        PageNumberList(vm.pageNumberList.toList(), onDelete, changeOrder)
+                        PageNumberList(vm.pageNumberList, onDelete, changeOrder)
                     }
                 }
-
-                ReorderbleVerticalList()
             }
         }
 
@@ -114,20 +111,26 @@ fun OrganizePdfScreen(navController: NavController)
 
 @Composable
 fun PageNumberList(
-    pageNumberList: List<Int>,
+    pageNumberList: SnapshotStateList<Int>,
     onDelete: (value: Int) -> Unit,
     changeOrder: (index1: Int, index2: Int) -> Unit
 ) {
-    LazyColumn(
+
+    val vm = viewModel<ReorderableViewModel>()
+    val listState = rememberLazyListState()
+
+    LazyColumn(state = listState,
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
+            .reOrderableList(listState) { selected: Int, hover: Int ->
+                pageNumberList.swap(selected, hover)
+            }
     ) {
         itemsIndexed(pageNumberList) { index, value ->
             ItemPageNumer(index, value, onDelete, changeOrder)
         }
     }
-
 }
 
 @Composable
@@ -138,25 +141,16 @@ fun ItemPageNumer(
     changeOrder: (index1: Int, index2: Int) -> Unit
 ) {
 
-    val offset = remember { mutableStateOf(Offset.Zero) }
-
-    val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
-        offset.value += offsetChange
-    }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .reOrderableItem(index)
             .padding(4.dp)
-            .graphicsLayer {
-                translationY = offset.value.y
-            }
             .border(
                 width = 2.dp,
                 color = colorResource(id = R.color.orange),
                 shape = RoundedCornerShape(10.dp)
             )
-            .transformable(state = state)
             .padding(10.dp)
     )
     {
@@ -204,3 +198,4 @@ fun ItemPageNumer(
         )
     }
 }
+

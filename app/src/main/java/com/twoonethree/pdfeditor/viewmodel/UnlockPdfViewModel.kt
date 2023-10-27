@@ -1,13 +1,11 @@
 package com.twoonethree.pdfeditor.viewmodel
 
 import android.content.ContentResolver
-import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.itextpdf.kernel.pdf.PdfReader
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
-import com.twoonethree.pdfeditor.utilities.PdfUtilities
+import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class UnlockPdfViewModel:ViewModel() {
