@@ -50,7 +50,6 @@ android {
 
 dependencies {
 
-    implementation project(path: ':lazylist')
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
     implementation 'androidx.activity:activity-compose:1.7.2'
@@ -75,4 +74,8 @@ dependencies {
     implementation 'com.itextpdf:itext7-core:7.1.3'
     //gson
     implementation 'com.google.code.gson:gson:2.8.9'
+    //reorder compose lazycolumn
+    implementation 'com.github.213maheta:ComposeReorderableList:1.0.1'
+    //coil
+    implementation 'io.coil-kt:coil-compose:2.4.0'
 }

@@ -97,7 +97,7 @@ fun CreatedPdfList(pdfList: List<PdfData>, onItemClick: (String) -> Unit) {
     LazyColumn()
     {
         items(pdfList) {
-            ItemPdfGridCell(it, onItemClick)
+            ItemPdf(it, onItemClick)
             Spacer(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -110,7 +110,7 @@ fun CreatedPdfList(pdfList: List<PdfData>, onItemClick: (String) -> Unit) {
 }
 
 @Composable
-fun ItemPdfGridCell(pdfData: PdfData, onItemClick: (String) -> Unit) {
+fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .clickable {

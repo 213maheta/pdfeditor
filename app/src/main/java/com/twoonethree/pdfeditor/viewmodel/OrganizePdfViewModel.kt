@@ -13,7 +13,7 @@ class OrganizePdfViewModel() : ViewModel() {
 
     var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0))
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
-    val pageNumberList = mutableStateListOf<Int>()
+    val pageNumberList = mutableStateListOf<Int>(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)
 
     fun setUiIntent(value: ScreenCommonEvents) {
         uiIntent.value = value

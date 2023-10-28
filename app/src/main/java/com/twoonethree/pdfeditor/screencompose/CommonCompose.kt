@@ -134,53 +134,6 @@ fun MyTopAppBar(
 }
 
 @Composable
-fun pdfLauncher(onSuccess: (PdfData) -> Boolean): ManagedActivityResultLauncher<String, Uri?> {
-    val contentResolver = LocalContext.current.contentResolver
-    return rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri ->
-            uri?.let {
-                val pdf = FileUtilities.getFileData(resolver = contentResolver, uri = it)
-                onSuccess(pdf)
-            }
-        }
-    )
-}
-
-@Composable
-fun pdfLauncherOpenDocument(onSuccess: (PdfData) -> Boolean): ManagedActivityResultLauncher<Array<String>, Uri?> {
-    val contentResolver = LocalContext.current.contentResolver
-    return rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument(),
-        onResult = { uri ->
-            uri?.let {
-                val pdf = FileUtilities.getFileData(resolver = contentResolver, uri = it)
-                onSuccess(pdf)
-            }
-        }
-    )
-}
-
-@Composable
-fun pdfLauncherMulti(onSuccess: (List<PdfData>) -> Boolean): ManagedActivityResultLauncher<String, List<@JvmSuppressWildcards Uri>> {
-    val contentResolver = LocalContext.current.contentResolver
-    return rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetMultipleContents(),
-        onResult = { uriList ->
-            uriList.let {
-                val pdfDataList = mutableListOf<PdfData>()
-                it.forEach {
-                    val pdf = FileUtilities.getFileData(resolver = contentResolver, uri = it)
-                    pdfDataList.add(pdf)
-                }
-                onSuccess(pdfDataList)
-            }
-        }
-    )
-}
-
-
-@Composable
 fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index:Int = 0) {
     Row(
         verticalAlignment = Alignment.CenterVertically,

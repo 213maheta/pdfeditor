@@ -162,6 +162,7 @@ fun getDestinationNode(node: String): String {
         "Unlock PDF" -> return ScreenName.UNLOCK_PASSWORD_SCREEN
         "Text to PDF" -> return ScreenName.PASSWORD_DIALOG_SCREEN
         "Organize PDF" -> return ScreenName.ORGANIZE_PDF_SCREEN
+        "Image to PDF" -> return ScreenName.IMAGE_TO_PDF_SCREEN
         else -> return ScreenName.SPLIT_PDF_SCREEN
     }
 }

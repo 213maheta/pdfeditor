@@ -58,6 +58,9 @@ fun Navingation() {
         composable(Destination.OrganizePdfScreen.node) {
             OrganizePdfScreen(navController)
         }
+        composable(Destination.ImageToPdfScreen.node) {
+            ImageToPdfScreen(navController)
+        }
     }
 }
 

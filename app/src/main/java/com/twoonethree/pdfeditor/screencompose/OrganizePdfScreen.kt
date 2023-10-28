@@ -1,5 +1,6 @@
 package com.twoonethree.pdfeditor.screencompose
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -93,6 +94,8 @@ fun OrganizePdfScreen(navController: NavController)
                         PageNumberList(vm.pageNumberList, onDelete, changeOrder)
                     }
                 }
+
+                PageNumberList(vm.pageNumberList, onDelete, changeOrder)
             }
         }
 
@@ -140,7 +143,6 @@ fun ItemPageNumer(
     onDelete: (value: Int) -> Unit,
     changeOrder: (index1: Int, index2: Int) -> Unit
 ) {
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -151,6 +153,7 @@ fun ItemPageNumer(
                 color = colorResource(id = R.color.orange),
                 shape = RoundedCornerShape(10.dp)
             )
+            .background(color = Color.Gray)
             .padding(10.dp)
     )
     {

@@ -11,6 +11,8 @@
     <string name="password_protection">Password Protection</string>
     <string name="unlock_pdf">Unlock PDF</string>
     <string name="organize_pdf">Organize PDF</string>
+    <string name="image_to_pdf">Image To Pdf</string>
+
 
     <string name="application_pdf">application/pdf</string>
     <string name="delete">delete</string>

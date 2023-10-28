@@ -39,7 +39,6 @@ object FileUtilities {
     }
 
     fun getAllPdf(resolver: ContentResolver, addAllPdf: (pdfList: List<PdfData>) -> Unit) {
-
         CoroutineScope(Dispatchers.IO).launch {
             val pdfList = mutableListOf<PdfData>()
 

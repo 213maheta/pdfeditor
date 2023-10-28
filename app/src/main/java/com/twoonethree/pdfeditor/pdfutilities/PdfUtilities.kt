@@ -4,10 +4,14 @@ import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
+import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toIcon
+import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.io.source.RandomAccessSourceFactory
 import com.itextpdf.kernel.crypto.BadPasswordException
+import com.itextpdf.kernel.geom.PageSize
 import com.itextpdf.kernel.pdf.EncryptionConstants
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfReader
@@ -18,6 +22,7 @@ import com.itextpdf.kernel.utils.PageRange
 import com.itextpdf.kernel.utils.PdfMerger
 import com.itextpdf.kernel.utils.PdfSplitter
 import com.itextpdf.layout.Document
+import com.itextpdf.layout.element.Image
 import com.itextpdf.layout.element.Paragraph
 import com.itextpdf.layout.property.TextAlignment
 import com.itextpdf.layout.property.VerticalAlignment
@@ -26,6 +31,7 @@ import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.utilities.FileManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -99,6 +105,7 @@ object PdfUtilities {
                 }
                 pdfDoc.close()
                 inputStream?.close()
+                cancel()
             }
         }
     }
@@ -134,6 +141,7 @@ object PdfUtilities {
                 )
                 pdfRenderer.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                 pdfRenderer.close()
+                val i = bitmap.toIcon()
                 return bitmap.asImageBitmap()
             } catch (e: Exception) {
                 return null
@@ -385,4 +393,36 @@ object PdfUtilities {
         dstDoc.close()
         callBack(ScreenCommonEvents.ShowToast("PDF reorder successfully"))
     }
+
+    fun imageToPdf(
+        resolver: ContentResolver,
+        uri: Uri,
+        callBack: (ScreenCommonEvents) -> Unit,
+    )
+    {
+        CoroutineScope(Dispatchers.IO).launch {
+            val srcStream = resolver.openInputStream(uri)
+            val dst = FileManager.createPdfFile()
+
+            val imageByteArray = srcStream?.readBytes()
+            val imageData = ImageDataFactory.create(imageByteArray)
+
+            val pdfDocument = PdfDocument(PdfWriter(dst)).also {
+                it.defaultPageSize = PageSize(imageData.width, imageData.height)
+            }
+
+            val document = Document(pdfDocument)
+            val image = Image(imageData)
+
+            document.add(image)
+
+            srcStream?.close()
+            pdfDocument.close()
+            document.close()
+
+            callBack(ScreenCommonEvents.ShowToast("Image to pdf conversion successfully"))
+            cancel()
+        }
+    }
+
 }
