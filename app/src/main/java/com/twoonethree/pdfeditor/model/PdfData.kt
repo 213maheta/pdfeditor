@@ -7,7 +7,6 @@ data class PdfData(
     val name: String,
     val size: String,
     val uri: Uri?,
-    val thumbnail: ImageBitmap?,
     var totalPageNumber:Int,
     val date: String? = null,
     var password:String? = null

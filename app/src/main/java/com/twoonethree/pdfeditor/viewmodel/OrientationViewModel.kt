@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class OrientationViewModel:ViewModel() {
 
-    var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0, null, null))
+    var selectedPdf = mutableStateOf(PdfData("", "" , null,  0, null, null))
     val currentOrientation = mutableStateOf(0)
     var previousOrientation = 0
 
@@ -24,7 +24,7 @@ class OrientationViewModel:ViewModel() {
 
     fun removeSelectedPdf(value: PdfData)
     {
-        selectedPdf.value = PdfData("", "" , null, null, 0)
+        selectedPdf.value = PdfData("", "" , null,  0)
     }
 
     fun changeOrientation(resolver: ContentResolver)

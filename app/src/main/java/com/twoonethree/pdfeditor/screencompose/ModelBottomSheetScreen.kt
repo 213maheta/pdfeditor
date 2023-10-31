@@ -1,33 +1,40 @@
 package com.twoonethree.pdfeditor.screencompose
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -35,91 +42,119 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
+import androidx.core.net.toFile
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import com.twoonethree.pdfeditor.Destination
 import com.twoonethree.pdfeditor.R
-import com.twoonethree.pdfeditor.events.ScreenCommonEvents
+import com.twoonethree.pdfeditor.dialog.DeleteDialogScreen
 import com.twoonethree.pdfeditor.model.PdfData
-import com.twoonethree.pdfeditor.utilities.StringUtilities
-import com.twoonethree.pdfeditor.viewmodel.MyCreationViewModel
-import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
+import com.twoonethree.pdfeditor.mycreation.MyCreationViewModel
+import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.dialog.DialogViewModel
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyCreationScreen(navController: NavHostController) {
-
-    val vm = viewModel<MyCreationViewModel>()
+fun ModelBottomSheetScreen()
+{
     val context = LocalContext.current
-    val contentResolver = LocalContext.current.contentResolver
-    val onItemClick = { value: String ->
-        navController.navigate(
-            Destination.PdfViewerScreen.node + "/" + StringUtilities.removeSlash(value)
-        )
-    }
+    val vm = viewModel<MyCreationViewModel>()
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(key1 = Unit) {
-        vm.getAllPdf(contentResolver = contentResolver)
-        vm.uiIntent.collect {
-            when (it) {
-                is ScreenCommonEvents.ShowToast -> {
-                    myToast(context, it.message)
-                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
-                }
+    val onShareClick = {
+        vm.selectedPdf.value.uri?.toFile()?.let {
+            val shareUri = FileProvider.getUriForFile(
+                context,
+                context.applicationContext.packageName + ".provider",
+                it
+            )
+            context.startActivity(Intent.createChooser(vm.shareIntent(shareUri), "Share"));
+        }?: run {
 
-                else -> {}
-            }
         }
     }
 
-    val innerContent: @Composable (paddingvalues: PaddingValues) -> Unit =
-        { paddingvalues: PaddingValues ->
-            Box(
-                modifier = Modifier
-                    .padding(paddingvalues)
-                    .fillMaxSize(),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                CreatedPdfList(vm.pdfList.toList(), onItemClick)
-            }
-        }
+    if (vm.showBottomSheet.value) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                vm.showBottomSheet.value = false
+            },
+            sheetState = sheetState
+        ) {
+            ItemPdf(pdfData = vm.selectedPdf.value)
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .padding(horizontal = 6.dp)
+                .background(color = colorResource(id = R.color.black))
+            )
 
-    MyTopAppBar(
-        titleId = R.string.my_creation,
-        backClick = { navController.navigateUp() },
-        doneClick = { },
-        floatBtnClick = { },
-        innerContent = innerContent,
-    )
-}
+            IconRow(Icons.Default.Delete, R.string.delete, { DialogViewModel.isDeleteDialogVisible.value = true})
+            IconRow(Icons.Default.Share, R.string.share, onShareClick)
+            IconRow(Icons.Default.Person, R.string.rename, vm::rename)
 
-@Composable
-fun CreatedPdfList(pdfList: List<PdfData>, onItemClick: (String) -> Unit) {
-    LazyColumn()
-    {
-        items(pdfList) {
-            ItemPdf(it, onItemClick)
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .padding(horizontal = 6.dp)
-                    .background(color = colorResource(id = R.color.grey_light))
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
             )
         }
     }
+
+    when{
+        DialogViewModel.isDeleteDialogVisible.value -> DeleteDialogScreen(vm::delete)
+    }
 }
 
 @Composable
-fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit) {
+fun IconRow(icon: ImageVector, nameId: Int, function: () -> Unit)
+{
     Row(verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
             .clickable {
-                onItemClick(pdfData.uri.toString())
+                function()
             }
+    )
+    {
+        Icon(
+            imageVector = icon,
+            contentDescription = stringResource(id = nameId),
+            modifier = Modifier
+                .padding(start = 20.dp)
+        )
+        Text(
+            text = stringResource(id = nameId),
+            color = Color.Black,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            modifier = Modifier
+                .padding(start = 15.dp)
+        )
+    }
+}
+
+@Composable
+fun ItemPdf(pdfData: PdfData) {
+    val resolver = LocalContext.current.contentResolver
+
+    val imageBitmap = remember<MutableState<ImageBitmap?>> {
+        mutableStateOf(ImageBitmap(1, 1))
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        pdfData.uri?.let {
+            imageBitmap.value = PdfUtilities.getPdfThumbnail(resolver, it)
+        }
+    }
+
+    Row(verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
             .padding(10.dp)
             .fillMaxWidth()
     ) {
-        pdfData.thumbnail?.let {
+        imageBitmap.value?.let {
             Image(
                 bitmap = it,
                 contentDescription = "",
@@ -206,7 +241,6 @@ fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit) {
                 )
             }
         }
-
         if (pdfData.totalPageNumber == 0) {
             Icon(
                 imageVector = Icons.Default.Lock,
@@ -216,15 +250,6 @@ fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit) {
 
             )
         }
-
-        Icon(
-            imageVector = Icons.Default.Menu,
-            contentDescription = stringResource(R.string.menu),
-            modifier = Modifier
-                .weight(0.1f)
-                .clickable {
-
-                }
-        )
     }
 }
+

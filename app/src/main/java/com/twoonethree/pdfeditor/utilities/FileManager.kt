@@ -1,9 +1,14 @@
 package com.twoonethree.pdfeditor.utilities
 
-import android.content.Context
+import android.content.ContentResolver
+import android.content.ContentValues
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
+import androidx.core.net.toFile
 import java.io.File
+
 
 object FileManager {
 
@@ -32,8 +37,9 @@ object FileManager {
         }
     }
 
-    fun createPdfFile(): File {
-        val pdfFile = File("$appDir/${getFileName()}")
+    fun createPdfFile(customeName:String? = null): File {
+        val fileName = customeName?:getFileName()
+        val pdfFile = File("$appDir/$fileName")
         pdfFile.createNewFile()
         return pdfFile
     }
@@ -48,8 +54,17 @@ object FileManager {
         return fileName
     }
 
-    private fun deletePdfFile(file: File) {
-        file.deleteOnExit()
+
+    fun deleteFile(uri: Uri): Boolean {
+        return uri.toFile().delete()
+    }
+
+    fun renameFile(src: Uri, dstName:String): Boolean {
+        /*val contenValues = ContentValues()
+        contenValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, newName)
+        contentResolver.update(uri, contenValues, null)*/
+        val dst = createPdfFile(dstName)
+        return src.toFile().renameTo(dst)
     }
 
 }

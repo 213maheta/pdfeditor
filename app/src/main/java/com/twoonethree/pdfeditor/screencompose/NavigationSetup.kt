@@ -17,7 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.twoonethree.pdfeditor.Destination
 import com.twoonethree.pdfeditor.R
-import com.twoonethree.pdfeditor.model.PdfData
+import com.twoonethree.pdfeditor.mycreation.MyCreationScreen
 import kotlinx.coroutines.delay
 
 @Composable

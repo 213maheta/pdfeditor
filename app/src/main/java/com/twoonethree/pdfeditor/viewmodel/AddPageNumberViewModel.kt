@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class AddPageNumberViewModel:ViewModel() {
 
     val splitPointList = mutableStateListOf<Int>()
-    var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0))
+    var selectedPdf = mutableStateOf(PdfData("", "" , null,  0))
     var totalPageNumber = 0
 
     val selectedCorner = mutableStateOf<AddPageNumberSelection>(AddPageNumberSelection.BOTTOM_RIGHT)
@@ -26,7 +26,7 @@ class AddPageNumberViewModel:ViewModel() {
 
     fun removeSelectedPdf(value:PdfData)
     {
-        selectedPdf.value = PdfData("", "" , null, null, 0)
+        selectedPdf.value = PdfData("", "" , null,0)
     }
 
     fun addPageNumber(resolver: ContentResolver)

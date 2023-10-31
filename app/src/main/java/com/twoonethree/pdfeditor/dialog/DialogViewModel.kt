@@ -1,21 +1,22 @@
-package com.twoonethree.pdfeditor.viewmodel
+package com.twoonethree.pdfeditor.dialog
 
 import android.content.ContentResolver
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 
-class PasswordDialogViewModel:ViewModel() {
+class DialogViewModel:ViewModel() {
 
+    //Password Dialogue
     companion object{
-        var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0))
-        val isVisible = mutableStateOf(false)
+        var selectedPdf = mutableStateOf(PdfData("", "" , null,  0))
+        val isPasswordDialogueVisible = mutableStateOf(false)
         var selectedIndex = -1
+        val isDeleteDialogVisible = mutableStateOf(false)
+        val isRenameDialogVisible = mutableStateOf(false)
     }
 
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
@@ -26,22 +27,7 @@ class PasswordDialogViewModel:ViewModel() {
     }
     fun removeSelectedPdf(value:PdfData)
     {
-        selectedPdf.value = PdfData("", "" , null, null, 0)
-    }
-
-    fun getPasswordProtectedPDFReader(
-        resolver: ContentResolver,
-        callBack: (ScreenCommonEvents) -> Unit
-    ) = viewModelScope.launch {
-        /*val pdfReader = PdfUtilities.getPasswordProtectedPDFReader(
-                resolver = resolver,
-                uri = selectedPdf.value.uri!!,
-                password = password.value,
-                callBack = callBack
-            )
-        pdfReader?.let {
-            callBack(ScreenCommonEvents.GotProtectedPdf(it))
-        }*/
+        selectedPdf.value = PdfData("", "" , null,  0)
     }
 
     fun checkPassword(
@@ -57,4 +43,7 @@ class PasswordDialogViewModel:ViewModel() {
             )
         }
     }
+
+    //Rename Dialogue
+
 }

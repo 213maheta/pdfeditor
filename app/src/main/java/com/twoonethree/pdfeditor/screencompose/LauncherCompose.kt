@@ -57,9 +57,9 @@ fun pdfLauncherMulti(onSuccess: (List<PdfData>) -> Boolean): ManagedActivityResu
 
 
 @Composable
-fun ImageLauncher(onSuccess: (Uri?) -> Unit): ManagedActivityResultLauncher<String, Uri?> {
+fun ImageLauncher(onSuccess: (List<Uri>) -> Unit): ManagedActivityResultLauncher<String, List<@JvmSuppressWildcards Uri>> {
     return rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
+        contract = ActivityResultContracts.GetMultipleContents(),
         onResult = {
             onSuccess(it)
         }

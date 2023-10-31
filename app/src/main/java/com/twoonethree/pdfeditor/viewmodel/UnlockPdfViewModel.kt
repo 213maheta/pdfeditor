@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class UnlockPdfViewModel:ViewModel() {
 
-    var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0))
+    var selectedPdf = mutableStateOf(PdfData("", "" , null,  0))
 
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
 
@@ -20,7 +20,7 @@ class UnlockPdfViewModel:ViewModel() {
 
     fun removeSelectedPdf(value: PdfData)
     {
-        selectedPdf.value = PdfData("", "" , null, null, 0)
+        selectedPdf.value = PdfData("", "" , null,  0)
     }
 
     fun checkPassword(resolver: ContentResolver)

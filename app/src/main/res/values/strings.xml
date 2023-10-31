@@ -15,7 +15,9 @@
 
 
     <string name="application_pdf">application/pdf</string>
-    <string name="delete">delete</string>
+    <string name="delete">Delete</string>
+    <string name="share">Share</string>
+    <string name="rename">Rename</string>
     <string name="menu">Menu</string>
     <string name="lock">Lock</string>
     <string name="refresh">refresh</string>

@@ -29,7 +29,6 @@ object FileUtilities {
             name = name,
             size = convertByteToMB(size),
             uri = uri,
-            thumbnail = PdfUtilities.getPdfThumbnail(resolver = resolver, uri = uri),
             totalPageNumber = PdfUtilities.getTotalPageNumber(resolver = resolver, uri = uri)
         )
     }
@@ -68,13 +67,10 @@ object FileUtilities {
                 .use { cursor ->
                     assert(cursor != null)
                     if (cursor?.moveToFirst() == true) {
-                        val columnName =
-                            cursor.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME)
+                        val columnName = cursor.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME)
                         val columnData = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA)
-                        val columnModifiedDate =
-                            cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_MODIFIED)
-                        val columnAddedDate =
-                            cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_ADDED)
+                        val columnModifiedDate = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_MODIFIED)
+                        val columnAddedDate = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_ADDED)
                         val columnSize = cursor.getColumnIndex(MediaStore.Files.FileColumns.SIZE)
                         do {
                             val name = cursor.getString(columnName)
@@ -98,7 +94,6 @@ object FileUtilities {
                                 name = name,
                                 size = size,
                                 uri = file.toUri(),
-                                thumbnail = imageBitmap,
                                 totalPageNumber = totalPageNumber,
                                 date = dateTime
                             )

@@ -2,6 +2,7 @@ package com.twoonethree.pdfeditor.viewmodel
 
 import android.content.ContentResolver
 import android.net.Uri
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
@@ -13,22 +14,39 @@ class ImageToPdfViewModel:ViewModel() {
 
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
 
-    var selectedImageUri = mutableStateOf<Uri?>("".toUri())
+    var uriList = mutableStateListOf<Uri>()
 
     fun setUiIntent(value: ScreenCommonEvents) {
         uiIntent.value = value
     }
 
+    fun removePage(value:Uri)
+    {
+        uriList.remove(value)
+    }
+
+    fun changePosition(index1: Int, index2: Int) {
+        if (index2 >= 0 && index2 < uriList.size) {
+
+            val temp = uriList[index1]
+            uriList[index1] = uriList[index2]
+            uriList[index2] = temp
+        }
+    }
+
     fun imageToPdf(resolver: ContentResolver)
     {
-        selectedImageUri.value?.let {
+        uriList.let {
+            if(it.isEmpty())
+            {
+                setUiIntent(ScreenCommonEvents.ShowToast("Select atleast one image"))
+                return
+            }
             PdfUtilities.imageToPdf(
                 resolver = resolver,
-                uri = it,
+                uriList = it,
                 ::setUiIntent
             )
-        }?: kotlin.run {
-            setUiIntent(ScreenCommonEvents.ShowToast("Select image first"))
         }
     }
 

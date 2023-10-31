@@ -38,9 +38,10 @@ import com.twoonethree.lazylist.reorder.reOrderableItem
 import com.twoonethree.lazylist.reorder.reOrderableList
 import com.twoonethree.lazylist.reorder.swap
 import com.twoonethree.pdfeditor.R
+import com.twoonethree.pdfeditor.dialog.PasswordDialogScreen
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.viewmodel.OrganizePdfViewModel
-import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
+import com.twoonethree.pdfeditor.dialog.DialogViewModel
 
 @Composable
 fun OrganizePdfScreen(navController: NavController)
@@ -65,15 +66,15 @@ fun OrganizePdfScreen(navController: NavController)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.ShowPasswordDialog -> {
-                    PasswordDialogViewModel.selectedPdf.value = vm.selectedPdf.value
-                    PasswordDialogViewModel.isVisible.value = true
+                    DialogViewModel.selectedPdf.value = vm.selectedPdf.value
+                    DialogViewModel.isPasswordDialogueVisible.value = true
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.GotPassword -> {
                     vm.selectedPdf.value.totalPageNumber = it.totalPageNumber
                     vm.selectedPdf.value.password = it.password
                     vm.setPageNumberList()
-                    PasswordDialogViewModel.isVisible.value = false
+                    DialogViewModel.isPasswordDialogueVisible.value = false
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 else -> {}
@@ -108,7 +109,7 @@ fun OrganizePdfScreen(navController: NavController)
     )
 
     when{
-        PasswordDialogViewModel.isVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+        DialogViewModel.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
     }
 }
 

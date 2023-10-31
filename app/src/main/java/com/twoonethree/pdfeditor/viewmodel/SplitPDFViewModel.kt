@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class SplitPDFViewModel() : ViewModel() {
 
      val splitPointList = mutableStateListOf<Int>()
-     var selectedPdf = mutableStateOf(PdfData("", "" , null, null, 0))
+     var selectedPdf = mutableStateOf(PdfData("", "" , null,  0))
 
      val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
 
@@ -70,7 +70,7 @@ class SplitPDFViewModel() : ViewModel() {
 
      fun removeSelectedPdf(value:PdfData)
      {
-          selectedPdf.value = PdfData("", "" , null, null, 0)
+          selectedPdf.value = PdfData("", "" , null,  0)
           removeAllSplitPoints()
      }
 }

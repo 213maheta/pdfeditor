@@ -12,8 +12,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.twoonethree.pdfeditor.R
+import com.twoonethree.pdfeditor.dialog.PasswordDialogScreen
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
-import com.twoonethree.pdfeditor.viewmodel.PasswordDialogViewModel
+import com.twoonethree.pdfeditor.dialog.DialogViewModel
 import com.twoonethree.pdfeditor.viewmodel.UnlockPdfViewModel
 
 @Composable
@@ -37,14 +38,14 @@ fun UnlockPdfScreen(navController: NavController)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.ShowPasswordDialog -> {
-                    PasswordDialogViewModel.selectedPdf.value = vm.selectedPdf.value
-                    PasswordDialogViewModel.isVisible.value = true
+                    DialogViewModel.selectedPdf.value = vm.selectedPdf.value
+                    DialogViewModel.isPasswordDialogueVisible.value = true
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.GotPassword -> {
                     vm.selectedPdf.value.totalPageNumber = it.totalPageNumber
                     vm.selectedPdf.value.password = it.password
-                    PasswordDialogViewModel.isVisible.value = false
+                    DialogViewModel.isPasswordDialogueVisible.value = false
                     vm.removePassword(contentResolver)
                 }
 
@@ -77,6 +78,6 @@ fun UnlockPdfScreen(navController: NavController)
     )
 
     when{
-        PasswordDialogViewModel.isVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+        DialogViewModel.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
     }
 }

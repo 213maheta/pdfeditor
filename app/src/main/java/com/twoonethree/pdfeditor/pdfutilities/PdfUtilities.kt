@@ -2,14 +2,13 @@ package com.twoonethree.pdfeditor.pdfutilities
 
 import android.content.ContentResolver
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.core.graphics.drawable.toIcon
 import com.itextpdf.io.image.ImageDataFactory
-import com.itextpdf.io.source.RandomAccessSourceFactory
 import com.itextpdf.kernel.crypto.BadPasswordException
 import com.itextpdf.kernel.geom.PageSize
 import com.itextpdf.kernel.pdf.EncryptionConstants
@@ -34,6 +33,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 
@@ -130,24 +132,23 @@ object PdfUtilities {
 
 
 
-    fun getPdfThumbnail(resolver: ContentResolver, uri: Uri): ImageBitmap? {
+     suspend fun getPdfThumbnail(resolver: ContentResolver, uri: Uri): ImageBitmap? = withContext(Dispatchers.IO) {
         resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
             try {
                 val pdfRenderer = PdfRenderer(parcelFileDescriptor).openPage(0)
                 val bitmap = Bitmap.createBitmap(
-                    pdfRenderer.width,
-                    pdfRenderer.height,
+                    50,
+                    50,
                     Bitmap.Config.ARGB_8888
                 )
                 pdfRenderer.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                 pdfRenderer.close()
-                val i = bitmap.toIcon()
-                return bitmap.asImageBitmap()
+                return@withContext bitmap.asImageBitmap()
             } catch (e: Exception) {
-                return null
+                return@withContext null
             }
         }
-        return null
+         return@withContext null
     }
 
     fun getPdfPage(
@@ -394,29 +395,28 @@ object PdfUtilities {
         callBack(ScreenCommonEvents.ShowToast("PDF reorder successfully"))
     }
 
-    fun imageToPdf(
+     fun imageToPdf(
         resolver: ContentResolver,
-        uri: Uri,
+        uriList: List<Uri>,
         callBack: (ScreenCommonEvents) -> Unit,
     )
     {
         CoroutineScope(Dispatchers.IO).launch {
-            val srcStream = resolver.openInputStream(uri)
             val dst = FileManager.createPdfFile()
-
-            val imageByteArray = srcStream?.readBytes()
-            val imageData = ImageDataFactory.create(imageByteArray)
-
             val pdfDocument = PdfDocument(PdfWriter(dst)).also {
-                it.defaultPageSize = PageSize(imageData.width, imageData.height)
+                it.defaultPageSize = PageSize.A4
             }
-
             val document = Document(pdfDocument)
-            val image = Image(imageData)
 
-            document.add(image)
-
-            srcStream?.close()
+            uriList.forEach{
+                val srcStream = resolver.openInputStream(it)
+                val imageByteArray = srcStream?.readBytes()
+                val imageData = ImageDataFactory.create(imageByteArray)
+                val image = Image(imageData)
+                document.pdfDocument.defaultPageSize = PageSize(image.imageWidth, image.imageHeight)
+                document.add(image)
+                srcStream?.close()
+            }
             pdfDocument.close()
             document.close()
 
