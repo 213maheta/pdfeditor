@@ -1,6 +1,7 @@
 package com.twoonethree.pdfeditor.screencompose
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -51,6 +52,7 @@ import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.mycreation.MyCreationViewModel
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
+import com.twoonethree.pdfeditor.dialog.RenameDialogScreen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,7 +94,8 @@ fun ModelBottomSheetScreen()
 
             IconRow(Icons.Default.Delete, R.string.delete, { DialogViewModel.isDeleteDialogVisible.value = true})
             IconRow(Icons.Default.Share, R.string.share, onShareClick)
-            IconRow(Icons.Default.Person, R.string.rename, vm::rename)
+            IconRow(Icons.Default.Person, R.string.rename, {
+                DialogViewModel.isRenameDialogVisible.value = true})
 
             Spacer(modifier = Modifier
                 .fillMaxWidth()
@@ -103,6 +106,10 @@ fun ModelBottomSheetScreen()
 
     when{
         DialogViewModel.isDeleteDialogVisible.value -> DeleteDialogScreen(vm::delete)
+    }
+
+    when{
+        DialogViewModel.isRenameDialogVisible.value -> RenameDialogScreen(vm::rename)
     }
 }
 
@@ -145,6 +152,7 @@ fun ItemPdf(pdfData: PdfData) {
 
     LaunchedEffect(key1 = Unit) {
         pdfData.uri?.let {
+            Log.e("TAG", "ItemPdf: ${pdfData.uri}", )
             imageBitmap.value = PdfUtilities.getPdfThumbnail(resolver, it)
         }
     }
@@ -182,7 +190,7 @@ fun ItemPdf(pdfData: PdfData) {
             )
             {
                 Image(
-                    painter = painterResource(id = R.drawable.splash_icon),
+                    painter = painterResource(id = R.drawable.ic_splash_icon),
                     contentDescription = "",
                     modifier = Modifier
                         .align(Alignment.Center)

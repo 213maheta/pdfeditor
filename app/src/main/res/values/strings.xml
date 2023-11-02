@@ -24,6 +24,7 @@
     <string name="my_creation">My Creation</string>
     <string name="pdf_viewer">Pdf Viewer</string>
     <string name="enter_password">Enter Password</string>
+    <string name="enter_file_name">Enter file name</string>
     <string name="down">Down</string>
     <string name="up">Up</string>
 </resources>

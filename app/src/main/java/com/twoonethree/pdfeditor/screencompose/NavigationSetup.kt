@@ -79,7 +79,7 @@ fun SplashScreen(navController: NavHostController) {
         )
         {
             Image(
-                painter = painterResource(id = R.drawable.splash_icon),
+                painter = painterResource(id = R.drawable.ic_splash_icon),
                 contentDescription = ""
             )
         }

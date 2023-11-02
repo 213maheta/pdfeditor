@@ -1,14 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="pdf_function_list">
-        <item>Merge PDF</item>
-        <item>Split PDF</item>
-        <item>Image to PDF</item>
-        <item>Add Page Number</item>
-        <item>Organize PDF</item>
-        <item>Protect PDF</item>
-        <item>Unlock PDF</item>
-        <item>Orientation</item>
-        <item>Text to PDF</item>
-    </string-array>
+
 </resources>

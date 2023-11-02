@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
@@ -19,7 +20,6 @@ class MyCreationViewModel:ViewModel() {
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
     var showBottomSheet = mutableStateOf(false)
     var selectedPdf = mutableStateOf(PdfData("", "" , null,  0))
-    var renameValue = mutableStateOf("")
     fun getAllPdf(contentResolver: ContentResolver)
     {
         val addAllPdf:(pdfList:List<PdfData>) -> Unit = {
@@ -33,24 +33,40 @@ class MyCreationViewModel:ViewModel() {
         uiIntent.value = value
     }
 
-    fun rename()
+    fun rename(newName:String)
     {
         if(selectedPdf.value.uri == null)
             return
-        if(renameValue.value.isEmpty())
+        if(newName.isEmpty())
         {
             setUiIntent(ScreenCommonEvents.ShowToast("Give proper name"))
             return
         }
         val sameNamePdf = pdfList.firstOrNull {
-            it.name == renameValue.value
+            it.name == newName
         }
-        if(sameNamePdf == null)
+        if(sameNamePdf != null)
         {
             setUiIntent(ScreenCommonEvents.ShowToast("This name already taken"))
             return
         }
-        FileManager.renameFile(selectedPdf.value.uri!!, renameValue.value)
+        val isSuccess = FileManager.renameFile(selectedPdf.value.uri!!, newName)
+        when(isSuccess)
+        {
+            true -> {
+                pdfList.firstOrNull {
+                    selectedPdf.value.name == it.name
+                }?.also {
+                    val newUri = selectedPdf.value.uri.toString().replace(selectedPdf.value.name, newName)
+                    val newPdfData = it.copy(name = newName, uri = newUri.toUri())
+                    val index = pdfList.indexOf(selectedPdf.value)
+                    pdfList.set(index, newPdfData)
+                    setUiIntent(ScreenCommonEvents.ShowToast("File renamed successfully"))
+                    showBottomSheet.value = false
+                }
+            }
+            false -> setUiIntent(ScreenCommonEvents.ShowToast("Something gone wrong"))
+        }
     }
 
     fun delete()

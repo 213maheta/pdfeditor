@@ -63,7 +63,7 @@ fun PasswordProtectionScreen(navController: NavController)
                 vm.selectedPdf.value.let { pdfData ->
                     pdfData.uri?.let {
                         ItemPDF(pdfData, vm::removeSelectedPdf)
-                        GetPassword(vm.password.value) { value: String ->
+                        PasswordTextEdit(vm.password.value) { value: String ->
                             vm.password.value = value
                         }
                     }

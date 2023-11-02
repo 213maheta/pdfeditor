@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -40,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -50,9 +53,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.twoonethree.pdfeditor.R
+import com.twoonethree.pdfeditor.dialog.DialogViewModel
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
-import com.twoonethree.pdfeditor.dialog.DialogViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -181,7 +184,7 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index:Int = 0) {
             )
             {
                 Image(
-                    painter = painterResource(id = R.drawable.splash_icon),
+                    painter = painterResource(id = R.drawable.ic_splash_icon),
                     contentDescription = "",
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -268,12 +271,16 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index:Int = 0) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GetPassword(value: String, onValueChange: (String) -> Unit) {
+fun PasswordTextEdit(value: String, onValueChange: (String) -> Unit) {
+    val containerColor = colorResource(id = R.color.orange)
     TextField(
         value = value,
         onValueChange = { onValueChange(it) },
         placeholder = { Text(stringResource(R.string.enter_password))},
-        colors = TextFieldDefaults.textFieldColors(
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = containerColor,
+            unfocusedContainerColor = containerColor,
+            disabledContainerColor = containerColor,
             cursorColor = colorResource(id = R.color.orange),
             focusedIndicatorColor = colorResource(id = R.color.orange),
             unfocusedIndicatorColor = colorResource(id = R.color.orange),
@@ -305,6 +312,30 @@ fun TextWithBorder(value: String, onClick: () -> Unit, endMargin: Dp)
             }
             .padding(4.dp)
     )
+}
+
+@Composable
+fun CircularProgressBar()
+{
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .clickable { }
+        .graphicsLayer {
+            alpha = 0.6f
+        }
+        .background(color = colorResource(id = R.color.grey_light))
+
+    )
+    {
+        CircularProgressIndicator(
+            modifier = Modifier
+                .width(64.dp)
+                .align(Alignment.Center)
+            ,
+            color = colorResource(id = R.color.orange),
+            trackColor = colorResource(id = R.color.grey_light),
+        )
+    }
 }
 
 

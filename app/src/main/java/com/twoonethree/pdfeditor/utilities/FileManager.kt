@@ -60,9 +60,6 @@ object FileManager {
     }
 
     fun renameFile(src: Uri, dstName:String): Boolean {
-        /*val contenValues = ContentValues()
-        contenValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, newName)
-        contentResolver.update(uri, contenValues, null)*/
         val dst = createPdfFile(dstName)
         return src.toFile().renameTo(dst)
     }

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.utilities.FileManager
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class DialogViewModel:ViewModel() {
@@ -45,5 +46,7 @@ class DialogViewModel:ViewModel() {
     }
 
     //Rename Dialogue
+    val newName = mutableStateOf("")
+
 
 }

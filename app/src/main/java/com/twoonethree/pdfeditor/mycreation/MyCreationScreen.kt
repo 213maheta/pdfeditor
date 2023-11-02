@@ -1,5 +1,6 @@
 package com.twoonethree.pdfeditor.mycreation
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -45,6 +46,7 @@ import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.screencompose.CircularProgressBar
 import com.twoonethree.pdfeditor.screencompose.ModelBottomSheetScreen
 import com.twoonethree.pdfeditor.screencompose.MyTopAppBar
 import com.twoonethree.pdfeditor.screencompose.myToast
@@ -80,27 +82,8 @@ fun MyCreationScreen(navController: NavHostController) {
             }
         }
     }
-
-    val innerContent: @Composable (paddingvalues: PaddingValues) -> Unit =
-        { paddingvalues: PaddingValues ->
-            Box(
-                modifier = Modifier
-                    .padding(paddingvalues)
-                    .fillMaxSize(),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                CreatedPdfList(vm.pdfList.toList(), onItemClick, onMenuClick)
-                ModelBottomSheetScreen()
-            }
-        }
-
-    MyTopAppBar(
-        titleId = R.string.my_creation,
-        backClick = { navController.navigateUp() },
-        doneClick = { },
-        floatBtnClick = { },
-        innerContent = innerContent,
-    )
+    CreatedPdfList(vm.pdfList.toList(), onItemClick, onMenuClick)
+    ModelBottomSheetScreen()
 }
 
 @Composable
@@ -132,8 +115,9 @@ fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit, onMenuClick: (PdfDa
         mutableStateOf(ImageBitmap(1, 1))
     }
 
-    LaunchedEffect(key1 = pdfData) {
+    LaunchedEffect(key1 = Unit) {
         pdfData.uri?.let {
+            Log.e("TAG", "ItemPdf: ${pdfData.uri}", )
             imageBitmap.value = PdfUtilities.getPdfThumbnail(resolver, it)
         }
     }
@@ -174,7 +158,7 @@ fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit, onMenuClick: (PdfDa
             )
             {
                 Image(
-                    painter = painterResource(id = R.drawable.splash_icon),
+                    painter = painterResource(id = R.drawable.ic_splash_icon),
                     contentDescription = "",
                     modifier = Modifier
                         .align(Alignment.Center)

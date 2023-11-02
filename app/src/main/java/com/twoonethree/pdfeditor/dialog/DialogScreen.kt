@@ -8,18 +8,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
-import com.twoonethree.pdfeditor.screencompose.GetPassword
+import com.twoonethree.pdfeditor.screencompose.PasswordTextEdit
 import com.twoonethree.pdfeditor.screencompose.TextWithBorder
 import com.twoonethree.pdfeditor.screencompose.myToast
 
@@ -73,7 +78,7 @@ fun PasswordDialogScreen(callback: (ScreenCommonEvents) -> Unit) {
                 modifier = Modifier
                     .padding(start = 10.dp, top = 10.dp)
             )
-            GetPassword(vm.password.value) { value: String ->
+            PasswordTextEdit(vm.password.value) { value: String ->
                 vm.password.value = value
             }
 
@@ -152,7 +157,12 @@ fun DeleteDialogScreen(callback: () -> Unit) {
 
 
 @Composable
-fun RenameDialogScreen(callback: () -> Unit) {
+fun RenameDialogScreen(callback:(String) -> Unit) {
+
+    val vm = viewModel<DialogViewModel>()
+    val context = LocalContext.current
+    val contentResolver = LocalContext.current.contentResolver
+    val pdfData = DialogViewModel.selectedPdf.value
 
     Dialog(onDismissRequest = { }) {
         Card(
@@ -162,8 +172,56 @@ fun RenameDialogScreen(callback: () -> Unit) {
             shape = RoundedCornerShape(5.dp),
         )
         {
+            Text(
+                text = "Rename File ${pdfData.name}",
+                color = Color.Black,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp,
+                modifier = Modifier
+                    .padding(start = 10.dp, top = 10.dp)
+            )
+            MyTextEdit(vm.newName.value) { value: String -> vm.newName.value = value}
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 5.dp, top = 20.dp, bottom = 20.dp)
+            )
+            {
+                TextWithBorder(value = "Ok", onClick = {
+                    callback(vm.newName.value + ".pdf")
+                    DialogViewModel.isRenameDialogVisible.value = false
+                    DialogViewModel.isRenameDialogVisible.value = false}, endMargin = 20.dp
+                )
+
+                TextWithBorder(
+                    value = "Cancel", onClick = {
+                        DialogViewModel.isRenameDialogVisible.value = false}, endMargin = 10.dp
+                )
+            }
 
         }
     }
 }
+
+
+@Composable
+fun MyTextEdit(value: String, onValueChange: (String) -> Unit)
+{
+    val containerColor = colorResource(id = R.color.orange)
+    TextField(
+        value = value,
+        onValueChange = { onValueChange(it) },
+        placeholder = { Text(stringResource(R.string.enter_file_name))},
+        colors = TextFieldDefaults.colors(
+            cursorColor = colorResource(id = R.color.orange),
+            focusedIndicatorColor = colorResource(id = R.color.orange),
+            unfocusedIndicatorColor = colorResource(id = R.color.orange),
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    )
+}
+
 

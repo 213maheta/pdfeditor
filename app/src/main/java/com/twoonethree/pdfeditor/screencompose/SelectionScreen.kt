@@ -1,33 +1,31 @@
 package com.twoonethree.pdfeditor.screencompose
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -37,8 +35,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.twoonethree.pdfeditor.Destination
 import com.twoonethree.pdfeditor.R
+import com.twoonethree.pdfeditor.mycreation.MyCreationScreen
 import com.twoonethree.pdfeditor.utilities.ScreenName
-import com.twoonethree.pdfeditor.utilities.StringUtilities
 
 @Composable
 fun SelectionScreen(navController: NavHostController) {
@@ -46,19 +44,19 @@ fun SelectionScreen(navController: NavHostController) {
         modifier = Modifier
             .fillMaxSize()
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(0.1f)
+                .weight(0.075f)
                 .background(color = colorResource(id = R.color.orange_light)),
-            verticalAlignment = Alignment.CenterVertically
         )
         {
             Icon(
-                imageVector = Icons.Default.Menu,
+                imageVector = Icons.Default.Settings,
                 contentDescription = "Menu",
                 modifier = Modifier
-                    .padding(start = 10.dp),
+                    .padding(start = 15.dp)
+                    .align(Alignment.CenterStart),
                 tint = Color.White
             )
             Text(
@@ -69,101 +67,113 @@ fun SelectionScreen(navController: NavHostController) {
                 color = Color.White,
                 modifier = Modifier
                     .padding(start = 10.dp)
+                    .align(Alignment.Center),
             )
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.8f)
-                .background(color = Color.White)
-        )
-        {
-            PdfFunctionsListView(navController)
         }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(0.1f)
-                .padding(8.dp)
-                .background(
-                    color = colorResource(id = R.color.orange_light),
-                    shape = RoundedCornerShape(10.dp)
-                )
-                .clickable {
-                    navController.navigate(Destination.MyCreationScreen.node)
-                }
+                .weight(0.175f)
+                .background(color = Color.White)
         )
         {
-             Text(
-                 text = stringResource(R.string.my_creation),
-                 textAlign = TextAlign.Center,
-                 fontWeight = FontWeight.ExtraBold,
-                 color = Color.White,
-                 modifier = Modifier
-                     .fillMaxSize()
-                     .wrapContentHeight(align = Alignment.CenterVertically)
-                 )
+            PdfFunctionsList(navController)
         }
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .weight(0.75f))
+        {
+            MyCreationScreen(navController = navController)
+        }
+
     }
 }
 
 @Composable
-fun PdfFunctionsListView(navController: NavHostController) {
-    val pdfFunctionArray = stringArrayResource(R.array.pdf_function_list).toList()
-    LazyHorizontalGrid(
-        rows = GridCells.Fixed(3),
+fun PdfFunctionsList(navController: NavHostController) {
+    LazyRow(
         horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalArrangement = Arrangement.SpaceEvenly,
         contentPadding = PaddingValues(8.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
-        items(pdfFunctionArray) {
-            PDFoptionCard(
-                it
-            ) {
-                navController.navigate(getDestinationNode(it))
-            }
+        item {
+            PDFoptionCard("Merge PDF", R.drawable.ic_merge_pdf,{ navController.navigate(ScreenName.MERGE_PDF_SCREEN) })
         }
+        item {
+            PDFoptionCard("Split PDF", R.drawable.ic_split_pdf,{ navController.navigate(ScreenName.SPLIT_PDF_SCREEN) })
+        }
+        item {
+            PDFoptionCard(
+                "Image to PDF",
+                R.drawable.ic_imageto_pdf,
+                { navController.navigate(ScreenName.IMAGE_TO_PDF_SCREEN) })
+
+        }
+        item {
+            PDFoptionCard(
+                "Add Page Number",
+                R.drawable.ic_addpagenumber_pdf,
+                { navController.navigate(ScreenName.ADD_PAGE_NUMBER_SCREEN) })
+        }
+        item {
+            PDFoptionCard(
+                "Organize PDF",
+                R.drawable.ic_organise_pdf,
+                { navController.navigate(ScreenName.ORGANIZE_PDF_SCREEN) })
+        }
+        item {
+            PDFoptionCard(
+                "Protect PDF",
+                R.drawable.ic_lock_pdf,
+                { navController.navigate(ScreenName.PASSWORD_PROTECTION_SCREEN) })
+        }
+        item {
+            PDFoptionCard(
+                "Unlock PDF",
+                R.drawable.ic_unlock_pdf,
+                { navController.navigate(ScreenName.UNLOCK_PASSWORD_SCREEN) })
+        }
+        item {
+            PDFoptionCard(
+                "Orientation",
+                R.drawable.ic_rotate_pdf,
+                { navController.navigate(ScreenName.ORIENTATION_SCREEN) })
+        }
+
     }
 }
 
 @Composable
 fun PDFoptionCard(
     fname: String,
+    drawableId: Int,
     onClick: () -> Unit
 ) {
-    Box(
+    Column(
         modifier = Modifier
-            .size(130.dp)
-            .shadow(elevation = 2.dp, shape = RoundedCornerShape(5.dp))
-            .padding(4.dp)
-            .border(width = 2.dp, color = Color.DarkGray, shape = RoundedCornerShape(5.dp))
+            .width(80.dp)
             .clickable {
                 onClick()
-            },
-        contentAlignment = Alignment.Center,
+            }
+            .padding(horizontal = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Image(
+            painter = painterResource(id = drawableId),
+            contentDescription = "",
+            modifier = Modifier
+                .width(40.dp)
+                .weight(0.8f)
+        )
         Text(
             text = fname,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Medium,
             fontSize = 12.sp,
-            fontFamily = FontFamily.SansSerif
+            fontFamily = FontFamily.SansSerif,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .weight(0.2f)
         )
-    }
-}
-
-fun getDestinationNode(node: String): String {
-    when(node) {
-        "Merge PDF" -> return ScreenName.MERGE_PDF_SCREEN
-        "Split PDF" -> return ScreenName.SPLIT_PDF_SCREEN
-        "Add Page Number" -> return ScreenName.ADD_PAGE_NUMBER_SCREEN
-        "Orientation" -> return ScreenName.ORIENTATION_SCREEN
-        "Protect PDF" -> return ScreenName.PASSWORD_PROTECTION_SCREEN
-        "Unlock PDF" -> return ScreenName.UNLOCK_PASSWORD_SCREEN
-        "Text to PDF" -> return ScreenName.PASSWORD_DIALOG_SCREEN
-        "Organize PDF" -> return ScreenName.ORGANIZE_PDF_SCREEN
-        "Image to PDF" -> return ScreenName.IMAGE_TO_PDF_SCREEN
-        else -> return ScreenName.SPLIT_PDF_SCREEN
     }
 }
 
