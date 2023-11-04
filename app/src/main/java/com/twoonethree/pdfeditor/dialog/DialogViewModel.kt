@@ -3,17 +3,20 @@ package com.twoonethree.pdfeditor.dialog
 import android.content.ContentResolver
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.utilities.FileManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
-class DialogViewModel:ViewModel() {
+class DialogViewModel : ViewModel() {
 
     //Password Dialogue
-    companion object{
-        var selectedPdf = mutableStateOf(PdfData("", "" , null,  0))
+    companion object {
+        var selectedPdf = mutableStateOf(PdfData("", "", null, 0))
         val isPasswordDialogueVisible = mutableStateOf(false)
         var selectedIndex = -1
         val isDeleteDialogVisible = mutableStateOf(false)
@@ -26,22 +29,32 @@ class DialogViewModel:ViewModel() {
     fun setUiIntent(value: ScreenCommonEvents) {
         uiIntent.value = value
     }
-    fun removeSelectedPdf(value:PdfData)
-    {
-        selectedPdf.value = PdfData("", "" , null,  0)
+
+    fun removeSelectedPdf(value: PdfData) {
+        selectedPdf.value = PdfData("", "", null, 0)
     }
 
-    fun checkPassword(
-        contentResolver: ContentResolver,
-        callback: (ScreenCommonEvents) -> Unit,
-        ) {
+    fun checkPassword(contentResolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
+    {
         selectedPdf.value.uri?.let {
-            PdfUtilities.checkPdfPassword(
+            val value = PdfUtilities.checkPdfPassword(
                 contentResolver,
                 uri = it,
                 password = password.value,
-                callback
             )
+
+            when {
+                value > 0 -> {
+                    setUiIntent(
+                        ScreenCommonEvents.GotPassword(
+                            totalPageNumber = value,
+                            password = password.value
+                        )
+                    )
+                }
+                value == 0 -> setUiIntent(ScreenCommonEvents.ShowToast("Password is incorrect"))
+                value == -1 -> setUiIntent(ScreenCommonEvents.ShowToast("Something went wrong"))
+            }
         }
     }
 

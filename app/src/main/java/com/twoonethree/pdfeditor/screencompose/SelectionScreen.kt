@@ -8,14 +8,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -33,7 +30,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.twoonethree.pdfeditor.Destination
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.mycreation.MyCreationScreen
 import com.twoonethree.pdfeditor.utilities.ScreenName
@@ -123,9 +119,9 @@ fun PdfFunctionsList(navController: NavHostController) {
         }
         item {
             PDFoptionCard(
-                "Protect PDF",
+                "Lock PDF",
                 R.drawable.ic_lock_pdf,
-                { navController.navigate(ScreenName.PASSWORD_PROTECTION_SCREEN) })
+                { navController.navigate(ScreenName.LOCK_PDF_SCREEN) })
         }
         item {
             PDFoptionCard(
@@ -137,7 +133,7 @@ fun PdfFunctionsList(navController: NavHostController) {
             PDFoptionCard(
                 "Orientation",
                 R.drawable.ic_rotate_pdf,
-                { navController.navigate(ScreenName.ORIENTATION_SCREEN) })
+                { navController.navigate(ScreenName.ROTATE_PDF_SCREEN) })
         }
 
     }

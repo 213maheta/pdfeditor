@@ -7,11 +7,18 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
+import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.utilities.CachedManager
 import com.twoonethree.pdfeditor.utilities.FileManager
 import com.twoonethree.pdfeditor.utilities.FileUtilities
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 
 
 class MyCreationViewModel:ViewModel() {
@@ -20,7 +27,7 @@ class MyCreationViewModel:ViewModel() {
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
     var showBottomSheet = mutableStateOf(false)
     var selectedPdf = mutableStateOf(PdfData("", "" , null,  0))
-    fun getAllPdf(contentResolver: ContentResolver)
+    fun getAllPdf(contentResolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
     {
         val addAllPdf:(pdfList:List<PdfData>) -> Unit = {
             pdfList.clear()
@@ -33,14 +40,14 @@ class MyCreationViewModel:ViewModel() {
         uiIntent.value = value
     }
 
-    fun rename(newName:String)
+    fun rename(newName:String) = viewModelScope.launch(Dispatchers.Default)
     {
         if(selectedPdf.value.uri == null)
-            return
+            return@launch
         if(newName.isEmpty())
         {
             setUiIntent(ScreenCommonEvents.ShowToast("Give proper name"))
-            return
+            return@launch
         }
         val sameNamePdf = pdfList.firstOrNull {
             it.name == newName
@@ -48,7 +55,7 @@ class MyCreationViewModel:ViewModel() {
         if(sameNamePdf != null)
         {
             setUiIntent(ScreenCommonEvents.ShowToast("This name already taken"))
-            return
+            return@launch
         }
         val isSuccess = FileManager.renameFile(selectedPdf.value.uri!!, newName)
         when(isSuccess)
@@ -80,6 +87,16 @@ class MyCreationViewModel:ViewModel() {
                 showBottomSheet.value = false
             }
         }
+    }
+
+    suspend fun getThumbNail(contentResolver: ContentResolver, uri: Uri): File? = withContext(Dispatchers.Default)
+    {
+        val value = CachedManager.isFileExist(uri)
+        if(value == null)
+        {
+            return@withContext PdfUtilities.cachedThumbnail(contentResolver, uri)
+        }
+        return@withContext value
     }
     fun shareIntent(shareUri: Uri): Intent {
         return Intent().apply {

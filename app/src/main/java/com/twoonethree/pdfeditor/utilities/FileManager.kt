@@ -7,6 +7,8 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.net.toFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 
@@ -29,11 +31,10 @@ object FileManager {
     }
 
     fun getAppDirectoryPath() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            appDir =
-                File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)}/$appName")
-        } else {
-            appDir = File("${Environment.getExternalStorageDirectory()}/$appName")
+        when(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        {
+            true -> appDir = File("${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)}/$appName")
+            false -> appDir = File("${Environment.getExternalStorageDirectory()}/$appName")
         }
     }
 
@@ -59,9 +60,9 @@ object FileManager {
         return uri.toFile().delete()
     }
 
-    fun renameFile(src: Uri, dstName:String): Boolean {
+    suspend fun renameFile(src: Uri, dstName:String): Boolean = withContext(Dispatchers.IO) {
         val dst = createPdfFile(dstName)
-        return src.toFile().renameTo(dst)
+        return@withContext src.toFile().renameTo(dst)
     }
 
 }

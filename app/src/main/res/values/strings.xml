@@ -8,8 +8,11 @@
     <string name="pdf_split">PDF Split</string>
     <string name="add_page_number">Add Page Number</string>
     <string name="change_orientation">Change Orientation</string>
+    <string name="rotate_pdf">Rotate PDF</string>
     <string name="password_protection">Password Protection</string>
     <string name="unlock_pdf">Unlock PDF</string>
+    <string name="lock_pdf">Lock PDF</string>
+
     <string name="organize_pdf">Organize PDF</string>
     <string name="image_to_pdf">Image To Pdf</string>
 

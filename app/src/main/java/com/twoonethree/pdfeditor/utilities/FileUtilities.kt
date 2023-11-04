@@ -12,12 +12,13 @@ import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 
 object FileUtilities {
 
-    fun getFileData(resolver: ContentResolver, uri: Uri): PdfData {
+    suspend fun getFileData(resolver: ContentResolver, uri: Uri): PdfData {
         val returnCursor = resolver.query(uri, null, null, null, null)!!
         val nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
         val sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE)
@@ -37,8 +38,8 @@ object FileUtilities {
         return "${MathUtilities.roundOffDecimal(value.toLong() / 1000000.0)} mb"
     }
 
-    fun getAllPdf(resolver: ContentResolver, addAllPdf: (pdfList: List<PdfData>) -> Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
+    suspend fun getAllPdf(resolver: ContentResolver, addAllPdf: (pdfList: List<PdfData>) -> Unit) = withContext(Dispatchers.IO){
+
             val pdfList = mutableListOf<PdfData>()
 
             val projection = arrayOf(
@@ -80,10 +81,8 @@ object FileUtilities {
 
                             val file = File(filePath)
                             val uri = file.toUri()
-
-                            val imageBitmap = PdfUtilities.getPdfThumbnail(resolver, uri)
-                            val totalPageNumber = PdfUtilities.getTotalPageNumber(resolver, uri)
                             val size = convertByteToMB(file.length().toString())
+                            val totalPageNumber =  PdfUtilities.getTotalPageNumber(resolver = resolver, uri = uri)
                             val dateTime =
                                 if (modifiedDate.isNullOrEmpty())
                                     TimeUtilities.convertLongToTime(addedDate.toLong())
@@ -102,6 +101,6 @@ object FileUtilities {
                     }
                 }
             addAllPdf(pdfList)
-        }
+
     }
 }

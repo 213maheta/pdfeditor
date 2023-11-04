@@ -7,10 +7,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,16 +39,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.twoonethree.pdfeditor.Destination
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
-import com.twoonethree.pdfeditor.screencompose.CircularProgressBar
 import com.twoonethree.pdfeditor.screencompose.ModelBottomSheetScreen
-import com.twoonethree.pdfeditor.screencompose.MyTopAppBar
 import com.twoonethree.pdfeditor.screencompose.myToast
 import com.twoonethree.pdfeditor.utilities.StringUtilities
+import java.io.File
 
 @Composable
 fun MyCreationScreen(navController: NavHostController) {
@@ -110,15 +110,14 @@ fun CreatedPdfList(
 @Composable
 fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit, onMenuClick: (PdfData) -> Unit) {
     val resolver = LocalContext.current.contentResolver
-
-    val imageBitmap = remember<MutableState<ImageBitmap?>> {
-        mutableStateOf(ImageBitmap(1, 1))
+    val vm = viewModel<MyCreationViewModel>()
+    val thumbnailPath = remember {
+        mutableStateOf<File?>(null)
     }
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = pdfData) {
         pdfData.uri?.let {
-            Log.e("TAG", "ItemPdf: ${pdfData.uri}", )
-            imageBitmap.value = PdfUtilities.getPdfThumbnail(resolver, it)
+            thumbnailPath.value = vm.getThumbNail(resolver, it)
         }
     }
 
@@ -130,9 +129,9 @@ fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit, onMenuClick: (PdfDa
             .padding(10.dp)
             .fillMaxWidth()
     ) {
-        imageBitmap.value?.let {
-            Image(
-                bitmap = it,
+        thumbnailPath.value?.let {
+            AsyncImage(
+                model = it,
                 contentDescription = "",
                 modifier = Modifier
                     .weight(0.1f)

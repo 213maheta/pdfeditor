@@ -3,10 +3,13 @@ package com.twoonethree.pdfeditor.viewmodel
 import android.content.ContentResolver
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 class UnlockPdfViewModel:ViewModel() {
 
@@ -42,15 +45,19 @@ class UnlockPdfViewModel:ViewModel() {
         }
     }
 
-    fun removePassword(resolver: ContentResolver)
+    fun removePassword(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
     {
         selectedPdf.value.uri?.let {
-            PdfUtilities.removePassword(
+            val isSuccess = PdfUtilities.removePassword(
                 resolver = resolver,
                 uri = it,
                 selectedPdf.value.password,
-                ::setUiIntent
             )
+            when(isSuccess)
+            {
+                true -> setUiIntent(ScreenCommonEvents.ShowToast("Password removed successfully"))
+                false -> setUiIntent(ScreenCommonEvents.ShowToast("Something gone wrong"))
+            }
         }
     }
 }

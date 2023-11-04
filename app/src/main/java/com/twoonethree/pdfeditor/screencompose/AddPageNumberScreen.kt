@@ -1,5 +1,6 @@
 package com.twoonethree.pdfeditor.screencompose
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -66,6 +67,9 @@ fun AddPageNumberScreen(navController: NavController)
                     vm.selectedPdf.value.password = it.password
                     DialogViewModel.isPasswordDialogueVisible.value = false
                 }
+                is ScreenCommonEvents.ShowProgressBar -> {
+                    vm.showProgressBar.value = it.value
+                }
                 else -> {}
             }
         }
@@ -97,6 +101,10 @@ fun AddPageNumberScreen(navController: NavController)
 
     when{
         DialogViewModel.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+    }
+
+    AnimatedVisibility(visible = vm.showProgressBar.value) {
+        CircularProgressBar()
     }
 }
 

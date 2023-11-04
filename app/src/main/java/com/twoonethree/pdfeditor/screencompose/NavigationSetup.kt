@@ -46,11 +46,11 @@ fun Navingation() {
         composable(Destination.AddPageNumberScreen.node) {
             AddPageNumberScreen(navController)
         }
-        composable(Destination.OrientationScreen.node) {
-            OrientationScreen(navController)
+        composable(Destination.RotatePdfScreen.node) {
+            RotatePdfScreen(navController)
         }
-        composable(Destination.PasswordProtectionScreen.node) {
-            PasswordProtectionScreen(navController)
+        composable(Destination.LockPdfScreen.node) {
+            LockPdfScreen(navController)
         }
         composable(Destination.UnlockPasswordScreen.node) {
             UnlockPdfScreen(navController)

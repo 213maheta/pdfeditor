@@ -8,10 +8,9 @@ object ScreenName {
     const val MY_CREATION_SCREEN = "my_creation_screen"
     const val PDF_VIEWER_SCREEN = "pdf_viewer_screen"
     const val ADD_PAGE_NUMBER_SCREEN = "add_page_number_screen"
-    const val ORIENTATION_SCREEN = "orientation_screen"
-    const val PASSWORD_PROTECTION_SCREEN = "password_protection_screen"
+    const val ROTATE_PDF_SCREEN = "rotate_pdf_screen"
+    const val LOCK_PDF_SCREEN = "lock_pdf_screen"
     const val UNLOCK_PASSWORD_SCREEN = "unlock_password_screen"
-    const val PASSWORD_DIALOG_SCREEN = "password_dialog_screen"
     const val ORGANIZE_PDF_SCREEN = "organize_pdf_screen"
     const val IMAGE_TO_PDF_SCREEN = "image_to_pdf_screen"
 }

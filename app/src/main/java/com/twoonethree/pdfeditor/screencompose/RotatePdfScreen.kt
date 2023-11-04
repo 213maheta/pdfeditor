@@ -1,5 +1,6 @@
 package com.twoonethree.pdfeditor.screencompose
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,17 +33,16 @@ import androidx.navigation.NavController
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.dialog.PasswordDialogScreen
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
-import com.twoonethree.pdfeditor.viewmodel.OrientationViewModel
+import com.twoonethree.pdfeditor.viewmodel.RotatePdfViewModel
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
 
 @Composable
-fun OrientationScreen(navController: NavController) {
-    val vm = viewModel<OrientationViewModel>()
+fun RotatePdfScreen(navController: NavController) {
+    val vm = viewModel<RotatePdfViewModel>()
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
     val onOrientationClick = {value:Int -> vm.currentOrientation.value = value}
     val isSelected :(Int)->Boolean = { value: Int -> vm.currentOrientation.value == value}
-
 
     val pickPdfDocument = pdfLauncherOpenDocument { pdf ->
         vm.selectedPdf.value = pdf
@@ -67,6 +67,9 @@ fun OrientationScreen(navController: NavController) {
                     vm.selectedPdf.value.password = it.password
                     DialogViewModel.isPasswordDialogueVisible.value = false
                 }
+                is ScreenCommonEvents.ShowProgressBar -> {
+                    vm.showProgressBar.value = it.value
+                }
                 else -> {}
             }
         }
@@ -89,7 +92,7 @@ fun OrientationScreen(navController: NavController) {
         }
 
     MyTopAppBar(
-        titleId = R.string.change_orientation,
+        titleId = R.string.rotate_pdf,
         backClick = { navController.navigateUp() },
         doneClick = { vm.changeOrientation(resolver = contentResolver) },
         floatBtnClick = { pickPdfDocument.launch(arrayOf(context.getString(R.string.application_pdf))) },
@@ -98,6 +101,10 @@ fun OrientationScreen(navController: NavController) {
 
     when{
         DialogViewModel.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+    }
+
+    AnimatedVisibility(visible = vm.showProgressBar.value) {
+        CircularProgressBar()
     }
 
 }

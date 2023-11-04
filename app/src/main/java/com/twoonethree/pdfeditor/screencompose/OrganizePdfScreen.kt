@@ -1,5 +1,6 @@
 package com.twoonethree.pdfeditor.screencompose
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.twoonethree.lazylist.reorder.ReorderableViewModel
 import com.twoonethree.lazylist.reorder.reOrderableItem
 import com.twoonethree.lazylist.reorder.reOrderableList
 import com.twoonethree.lazylist.reorder.swap
@@ -77,6 +77,9 @@ fun OrganizePdfScreen(navController: NavController)
                     DialogViewModel.isPasswordDialogueVisible.value = false
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
+                is ScreenCommonEvents.ShowProgressBar -> {
+                    vm.showProgressBar.value = it.value
+                }
                 else -> {}
             }
         }
@@ -95,8 +98,6 @@ fun OrganizePdfScreen(navController: NavController)
                         PageNumberList(vm.pageNumberList, onDelete, changeOrder)
                     }
                 }
-
-                PageNumberList(vm.pageNumberList, onDelete, changeOrder)
             }
         }
 
@@ -111,6 +112,9 @@ fun OrganizePdfScreen(navController: NavController)
     when{
         DialogViewModel.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
     }
+    AnimatedVisibility(visible = vm.showProgressBar.value) {
+        CircularProgressBar()
+    }
 }
 
 @Composable
@@ -120,7 +124,6 @@ fun PageNumberList(
     changeOrder: (index1: Int, index2: Int) -> Unit
 ) {
 
-    val vm = viewModel<ReorderableViewModel>()
     val listState = rememberLazyListState()
 
     LazyColumn(state = listState,
@@ -154,7 +157,7 @@ fun ItemPageNumer(
                 color = colorResource(id = R.color.orange),
                 shape = RoundedCornerShape(10.dp)
             )
-            .background(color = Color.Gray)
+            .background(color = colorResource(id = R.color.grey_light))
             .padding(10.dp)
     )
     {

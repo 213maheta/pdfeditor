@@ -5,19 +5,25 @@ import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.utilities.FileUtilities
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun pdfLauncher(onSuccess: (PdfData) -> Boolean): ManagedActivityResultLauncher<String, Uri?> {
     val contentResolver = LocalContext.current.contentResolver
+    val scope = rememberCoroutineScope()
     return rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
             uri?.let {
-                val pdf = FileUtilities.getFileData(resolver = contentResolver, uri = it)
-                onSuccess(pdf)
+                scope.launch(Dispatchers.Default) {
+                    val pdf = FileUtilities.getFileData(resolver = contentResolver, uri = it)
+                    onSuccess(pdf)
+                }
             }
         }
     )
@@ -26,12 +32,15 @@ fun pdfLauncher(onSuccess: (PdfData) -> Boolean): ManagedActivityResultLauncher<
 @Composable
 fun pdfLauncherOpenDocument(onSuccess: (PdfData) -> Boolean): ManagedActivityResultLauncher<Array<String>, Uri?> {
     val contentResolver = LocalContext.current.contentResolver
+    val scope = rememberCoroutineScope()
     return rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri ->
             uri?.let {
-                val pdf = FileUtilities.getFileData(resolver = contentResolver, uri = it)
-                onSuccess(pdf)
+                scope.launch(Dispatchers.Default) {
+                    val pdf = FileUtilities.getFileData(resolver = contentResolver, uri = it)
+                    onSuccess(pdf)
+                }
             }
         }
     )
@@ -40,16 +49,20 @@ fun pdfLauncherOpenDocument(onSuccess: (PdfData) -> Boolean): ManagedActivityRes
 @Composable
 fun pdfLauncherMulti(onSuccess: (List<PdfData>) -> Boolean): ManagedActivityResultLauncher<String, List<@JvmSuppressWildcards Uri>> {
     val contentResolver = LocalContext.current.contentResolver
+    val scope = rememberCoroutineScope()
+
     return rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
         onResult = { uriList ->
-            uriList.let {
-                val pdfDataList = mutableListOf<PdfData>()
-                it.forEach {
-                    val pdf = FileUtilities.getFileData(resolver = contentResolver, uri = it)
-                    pdfDataList.add(pdf)
+            scope.launch(Dispatchers.Default) {
+                uriList.let {
+                    val pdfDataList = mutableListOf<PdfData>()
+                    it.forEach {
+                        val pdf = FileUtilities.getFileData(resolver = contentResolver, uri = it)
+                        pdfDataList.add(pdf)
+                    }
+                    onSuccess(pdfDataList)
                 }
-                onSuccess(pdfDataList)
             }
         }
     )

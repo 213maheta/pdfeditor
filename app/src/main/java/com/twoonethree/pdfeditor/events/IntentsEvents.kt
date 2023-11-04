@@ -8,6 +8,7 @@ sealed class ScreenCommonEvents{
     data object ShowPasswordDialog:ScreenCommonEvents()
     data class GotPassword(val totalPageNumber: Int, val password:String):ScreenCommonEvents()
     data object EMPTY:ScreenCommonEvents()
+    data class ShowProgressBar(val value:Boolean):ScreenCommonEvents()
 }
 
 sealed class AddPageNumberSelection(val corner:String){

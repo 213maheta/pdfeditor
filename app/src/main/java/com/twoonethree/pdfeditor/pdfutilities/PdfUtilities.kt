@@ -2,7 +2,6 @@ package com.twoonethree.pdfeditor.pdfutilities
 
 import android.content.ContentResolver
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.util.Log
@@ -25,26 +24,29 @@ import com.itextpdf.layout.element.Image
 import com.itextpdf.layout.element.Paragraph
 import com.itextpdf.layout.property.TextAlignment
 import com.itextpdf.layout.property.VerticalAlignment
-import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
+import com.twoonethree.pdfeditor.utilities.CachedManager
 import com.twoonethree.pdfeditor.utilities.FileManager
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
 
 
 object PdfUtilities {
 
-    fun mergePdf(resolver: ContentResolver, fileList: List<PdfData>, pdfFile: File): Boolean {
+    suspend fun mergePdf(
+        resolver: ContentResolver,
+        fileList: List<PdfData>,
+        pdfFile: File,
+        onProgress: (Float) -> Unit,
+    ): Boolean = withContext(Dispatchers.IO) {
+
         val pdf = PdfDocument(PdfWriter(pdfFile))
         val merger = PdfMerger(pdf)
+
+        val totalPageNumber = fileList.map { it.totalPageNumber }.reduce { a: Int, b: Int -> a + b }
+        var donePageNumber = 0
 
         fileList.forEach { pdfData ->
             pdfData.uri?.let { uri ->
@@ -56,106 +58,124 @@ object PdfUtilities {
                 )
                 val srcPdf = PdfDocument(pdfReader)
                 merger.merge(srcPdf, 1, srcPdf.numberOfPages)
+                donePageNumber += srcPdf.numberOfPages
                 inputStream?.close()
                 srcPdf.close()
+                pdfReader.close()
+                val progress = donePageNumber * 1f / totalPageNumber
+                onProgress(progress)
+                Log.e("TAG", "mergePdf: $progress")
             }
         }
         try {
             pdf.close()
         } catch (e: Exception) {
-            return false
+            return@withContext false
         }
-        return true
+        return@withContext true
     }
 
-    fun splitPdf(
+    suspend fun splitPdf(
         resolver: ContentResolver,
-        srcFile: PdfData,
+        srcFile: Uri,
         dstFile: String,
         splitPointList: List<Int>,
         password: String?,
-        setUiEvent: (ScreenCommonEvents) -> Unit
-    ) {
-        srcFile.uri?.let {
-            CoroutineScope(Dispatchers.IO).launch {
-                val inputStream = resolver.openInputStream(it)
-                val pdfReader = getPdfReader(
-                    resolver = resolver,
-                    uri = it,
-                    password
-                )
-                val pdfDoc = PdfDocument(pdfReader)
-                val splitDocuments = object : PdfSplitter(pdfDoc) {
-                    var partNumber = 1
-                    override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
-                        return try {
-                            PdfWriter(String.format(dstFile, partNumber++))
-                        } catch (e: FileNotFoundException) {
-                            throw RuntimeException(e)
-                        }
-                    }
-                }.splitByPageNumbers(splitPointList)
-                setUiEvent(ScreenCommonEvents.ShowToast("Split successfully"))
-
-                delay(1000)
-                for (doc in splitDocuments) {
-                    try {
-                        doc.close()
-                    } catch (e: Exception) {
-                        Unit
-                    }
+    ): Boolean = withContext(Dispatchers.IO) {
+        val pdfReader = getPdfReader(
+            resolver = resolver,
+            uri = srcFile,
+            password
+        )
+        val pdfDoc = PdfDocument(pdfReader)
+        val splitDocuments = object : PdfSplitter(pdfDoc) {
+            var partNumber = 1
+            override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
+                return try {
+                    PdfWriter(String.format(dstFile, partNumber++))
+                } catch (e: FileNotFoundException) {
+                    throw RuntimeException(e)
                 }
-                pdfDoc.close()
-                inputStream?.close()
-                cancel()
             }
-        }
-    }
+        }.splitByPageNumbers(splitPointList)
 
-    fun getTotalPageNumber(resolver: ContentResolver, uri: Uri): Int {
-        try {
-            val inputStream = resolver.openInputStream(uri)
-            val reader = PdfReader(inputStream)
-            val pdf = PdfDocument(reader)
-            val pageCount = pdf.numberOfPages
-
-            reader.close()
-            inputStream?.close()
-            pdf.close()
-            return pageCount
-        } catch (e: BadPasswordException) {
-            return 0
-        } catch (e: Exception) {
-            return -1
-        }
-    }
-
-
-
-     suspend fun getPdfThumbnail(resolver: ContentResolver, uri: Uri): ImageBitmap? = withContext(Dispatchers.IO) {
-        resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
+        for (doc in splitDocuments) {
             try {
-                val pdfRenderer = PdfRenderer(parcelFileDescriptor).openPage(0)
-                val bitmap = Bitmap.createBitmap(
-                    50,
-                    50,
-                    Bitmap.Config.ARGB_8888
-                )
-                pdfRenderer.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                pdfRenderer.close()
-                return@withContext bitmap.asImageBitmap()
+                doc.close()
             } catch (e: Exception) {
-                return@withContext null
+                Unit
             }
         }
-         return@withContext null
+        pdfDoc.close()
+        pdfReader.close()
+        return@withContext true
     }
 
-    fun getPdfPage(
+    suspend fun getTotalPageNumber(resolver: ContentResolver, uri: Uri): Int =
+        withContext(Dispatchers.IO) {
+            try {
+                val inputStream = resolver.openInputStream(uri)
+                val pdfReader = PdfReader(inputStream)
+                val pdf = PdfDocument(pdfReader)
+                val pageCount = pdf.numberOfPages
+
+                inputStream?.close()
+                pdf.close()
+                pdfReader.close()
+                return@withContext pageCount
+            } catch (e: BadPasswordException) {
+                return@withContext 0
+            } catch (e: Exception) {
+                return@withContext -1
+            }
+        }
+
+
+    suspend fun getPdfThumbnail(resolver: ContentResolver, uri: Uri): ImageBitmap? =
+        withContext(Dispatchers.IO) {
+            resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
+                try {
+                    val pdfRenderer = PdfRenderer(parcelFileDescriptor).openPage(0)
+                    val bitmap = Bitmap.createBitmap(
+                        50,
+                        50,
+                        Bitmap.Config.ARGB_8888
+                    )
+                    pdfRenderer.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    pdfRenderer.close()
+                    return@withContext bitmap.asImageBitmap()
+                } catch (e: Exception) {
+                    return@withContext null
+                }
+            }
+            return@withContext null
+        }
+
+    suspend fun cachedThumbnail(resolver: ContentResolver, uri: Uri): File? =
+        withContext(Dispatchers.IO) {
+            resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
+                try {
+                    val pdfRenderer = PdfRenderer(parcelFileDescriptor).openPage(0)
+                    val bitmap = Bitmap.createBitmap(
+                        50,
+                        50,
+                        Bitmap.Config.ARGB_8888
+                    )
+                    pdfRenderer.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    pdfRenderer.close()
+                    return@withContext CachedManager.cachedBitmap(bitmap, uri)
+                } catch (e: Exception) {
+                    return@withContext null
+                }
+            }
+        }
+
+    suspend fun getPdfPage(
         resolver: ContentResolver,
         uri: Uri,
         screenWidth: Int
-    ): MutableList<ImageBitmap> {
+    ): MutableList<ImageBitmap> = withContext(Dispatchers.IO)
+    {
         val bitmapList = mutableListOf<ImageBitmap>()
         resolver.openFileDescriptor(uri, "r")?.use {
             val pdfRenderer = PdfRenderer(it)
@@ -174,87 +194,80 @@ object PdfUtilities {
             }
             pdfRenderer.close()
         }
-        return bitmapList
+        return@withContext bitmapList
     }
 
-    fun addPageNumber(
+    suspend fun addPageNumber(
         resolver: ContentResolver,
         uri: Uri,
-        callBack: (ScreenCommonEvents) -> Unit,
         password: String?,
         getXYPosition: (Float, Float) -> Pair<Float, Float>,
-    ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val src = resolver.openInputStream(uri)
-            val dst = FileManager.createPdfFile()
-            val pdfReader = getPdfReader(
-                resolver = resolver,
-                uri = uri,
-                password
-            )
-            val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
-            val doc = Document(pdfDoc)
-            val numberOfPages = pdfDoc.numberOfPages
-            val x = pdfDoc.firstPage.pageSize.width
-            val y = pdfDoc.firstPage.pageSize.height
+    ): Boolean = withContext(Dispatchers.IO) {
+        val src = resolver.openInputStream(uri)
+        val dst = FileManager.createPdfFile()
+        val pdfReader = getPdfReader(
+            resolver = resolver,
+            uri = uri,
+            password
+        )
+        val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
+        val doc = Document(pdfDoc)
+        val numberOfPages = pdfDoc.numberOfPages
+        val x = pdfDoc.firstPage.pageSize.width
+        val y = pdfDoc.firstPage.pageSize.height
 
-            val position = getXYPosition(x, y)
-            for (i in 1..numberOfPages) {
-                doc.showTextAligned(
-                    Paragraph(String.format("page %s of %s", i, numberOfPages)),
-                    position.first,
-                    position.second,
-                    i,
-                    TextAlignment.CENTER,
-                    VerticalAlignment.MIDDLE,
-                    0f
-                )
-            }
-            src?.close()
-            pdfDoc.close()
-            doc.close()
-            callBack(ScreenCommonEvents.ShowToast("Page number added successfully"))
+        val position = getXYPosition(x, y)
+        for (i in 1..numberOfPages) {
+            doc.showTextAligned(
+                Paragraph(String.format("page %s of %s", i, numberOfPages)),
+                position.first,
+                position.second,
+                i,
+                TextAlignment.CENTER,
+                VerticalAlignment.MIDDLE,
+                0f
+            )
         }
+        src?.close()
+        pdfDoc.close()
+        doc.close()
+        pdfReader.close()
+        return@withContext true
     }
 
-    fun changeOrientation(
+    suspend fun changeOrientation(
         resolver: ContentResolver,
         uri: Uri,
-        callBack: (ScreenCommonEvents) -> Unit,
         value: Int,
         password: String?,
-        function: () -> Unit,
-    ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val src = resolver.openInputStream(uri)
-            val dst = FileManager.createPdfFile()
-            val pdfReader = getPdfReader(
-                resolver = resolver,
-                uri = uri,
-                password = password
-            )
-            val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
-            val doc = Document(pdfDoc)
-            val numberOfPages = pdfDoc.numberOfPages
+    ): Boolean = withContext(Dispatchers.IO) {
+        val src = resolver.openInputStream(uri)
+        val dst = FileManager.createPdfFile()
+        val pdfReader = getPdfReader(
+            resolver = resolver,
+            uri = uri,
+            password = password
+        )
+        val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
+        val doc = Document(pdfDoc)
+        val numberOfPages = pdfDoc.numberOfPages
 
-            for (i in 1..numberOfPages) {
-                val page = pdfDoc.getPage(i)
-                page.setRotation(value)
-            }
-            src?.close()
-            pdfDoc.close()
-            doc.close()
-            function()
-            callBack(ScreenCommonEvents.ShowToast("Orientation changed successfully"))
+        for (i in 1..numberOfPages) {
+            val page = pdfDoc.getPage(i)
+            page.setRotation(value)
         }
-
+        src?.close()
+        pdfDoc.close()
+        doc.close()
+        pdfReader.close()
+        return@withContext true
     }
 
-    fun getOrientation(
+    suspend fun getOrientation(
         resolver: ContentResolver,
         uri: Uri,
-    ): Int {
-        return try {
+    ): Int = withContext(Dispatchers.IO) {
+        return@withContext try {
             val src = resolver.openInputStream(uri)
             val pdfDoc = PdfDocument(PdfReader(src).also { it.setUnethicalReading(true) })
             val orientaion = pdfDoc.firstPage.rotation
@@ -266,83 +279,77 @@ object PdfUtilities {
         } catch (e: Exception) {
             -2
         }
-
     }
 
-    fun setPassword(
+    suspend fun setPassword(
         resolver: ContentResolver,
         uri: Uri,
         password: String,
         prePassword: String?,
-        callBack: (ScreenCommonEvents) -> Unit
-    ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val src = resolver.openInputStream(uri)
-            val dst = FileManager.createPdfFile()
-            val props = WriterProperties()
-                .setStandardEncryption(
-                    password.toByteArray(),
-                    password.toByteArray(),
-                    EncryptionConstants.ALLOW_PRINTING,
-                    EncryptionConstants.STANDARD_ENCRYPTION_128
-                )
-            val pdfReader = getPdfReader(
-                resolver = resolver,
-                uri = uri,
-                prePassword
-            )
+    ): Boolean = withContext(Dispatchers.IO) {
 
-            val pdfDoc = PdfDocument(
-                pdfReader,
-                PdfWriter(dst.outputStream(), props)
+        val dst = FileManager.createPdfFile()
+        val props = WriterProperties()
+            .setStandardEncryption(
+                password.toByteArray(),
+                password.toByteArray(),
+                EncryptionConstants.ALLOW_PRINTING,
+                EncryptionConstants.STANDARD_ENCRYPTION_128
             )
-            pdfDoc.close()
-            callBack(ScreenCommonEvents.ShowToast("Password added successfully"))
-        }
+        val pdfReader = getPdfReader(
+            resolver = resolver,
+            uri = uri,
+            prePassword
+        )
+
+        val pdfDoc = PdfDocument(
+            pdfReader,
+            PdfWriter(dst.outputStream(), props)
+        )
+        pdfDoc.close()
+        pdfReader.close()
+        return@withContext true
     }
 
-    fun removePassword(
+    suspend fun removePassword(
         resolver: ContentResolver,
         uri: Uri,
         password: String?,
-        callBack: (ScreenCommonEvents) -> Unit
-    ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val dst = FileManager.createPdfFile()
-            val pdfReader = getPdfReader(
+    ): Boolean = withContext(Dispatchers.IO) {
+        val dst = FileManager.createPdfFile()
+        val pdfReader = getPdfReader(
             resolver = resolver,
             uri = uri,
             password = password
         )
-            try {
-                val pdfDoc = PdfDocument(
-                    pdfReader,
-                    PdfWriter(dst.outputStream())
-                )
-                pdfDoc.close()
-                callBack(ScreenCommonEvents.ShowToast("Password removed successfully"))
-            } catch (e: Exception) {
-                callBack(ScreenCommonEvents.ShowToast("Something gone wrong"))
-            }
+        try {
+            val pdfDoc = PdfDocument(
+                pdfReader,
+                PdfWriter(dst.outputStream())
+            )
+            pdfDoc.close()
+            pdfReader.close()
+            return@withContext true
+        } catch (e: Exception) {
+            return@withContext false
         }
     }
 
-    fun getPdfReader(
+    suspend fun getPdfReader(
         resolver: ContentResolver,
         uri: Uri,
         password: String?,
-    ): PdfReader {
+    ): PdfReader = withContext(Dispatchers.IO) {
         val src = resolver.openInputStream(uri)
         val props = ReaderProperties().setPassword(password?.toByteArray())
-        return PdfReader(src, props).also { it.setUnethicalReading(true) }
+        return@withContext PdfReader(src, props).also { it.setUnethicalReading(true) }
     }
 
-    fun checkPdfPassword(
+    suspend fun checkPdfPassword(
         resolver: ContentResolver,
         uri: Uri,
         password: String,
-        callBack: (ScreenCommonEvents) -> Unit
-    ) {
+    ): Int = withContext(Dispatchers.IO) {
         try {
             val src = resolver.openInputStream(uri)
             val props = ReaderProperties().setPassword(password.toByteArray())
@@ -350,31 +357,26 @@ object PdfUtilities {
 
             val pdfDoc = PdfDocument(pdfReader)
             val totalPageNumber = pdfDoc.numberOfPages
-            callBack(
-                ScreenCommonEvents.GotPassword(
-                    totalPageNumber = totalPageNumber,
-                    password = password
-                )
-            )
+
             pdfDoc.close()
             pdfReader.close()
             src?.close()
+            pdfReader.close()
+            return@withContext totalPageNumber
         } catch (e: BadPasswordException) {
-            callBack(ScreenCommonEvents.ShowToast("Password is incorrect"))
+            return@withContext 0
         } catch (e: Exception) {
-            callBack(ScreenCommonEvents.ShowToast("Something went wrong"))
+            return@withContext -1
         }
     }
 
 
-    fun reOrderPdf(
+    suspend fun reOrderPdf(
         resolver: ContentResolver,
         uri: Uri,
         password: String?,
-        pageOrderList:List<Int>,
-        callBack: (ScreenCommonEvents) -> Unit,
-    )
-    {
+        pageOrderList: List<Int>,
+    ): Boolean = withContext(Dispatchers.IO) {
         val inputStream = resolver.openInputStream(uri)
         val dst = FileManager.createPdfFile()
         val pdfReader = getPdfReader(
@@ -392,37 +394,32 @@ object PdfUtilities {
         inputStream?.close()
         srcDoc.close()
         dstDoc.close()
-        callBack(ScreenCommonEvents.ShowToast("PDF reorder successfully"))
+        pdfReader.close()
+        return@withContext true
     }
 
-     fun imageToPdf(
+    suspend fun imageToPdf(
         resolver: ContentResolver,
         uriList: List<Uri>,
-        callBack: (ScreenCommonEvents) -> Unit,
-    )
-    {
-        CoroutineScope(Dispatchers.IO).launch {
-            val dst = FileManager.createPdfFile()
-            val pdfDocument = PdfDocument(PdfWriter(dst)).also {
-                it.defaultPageSize = PageSize.A4
-            }
-            val document = Document(pdfDocument)
+    ): Boolean = withContext(Dispatchers.IO) {
 
-            uriList.forEach{
-                val srcStream = resolver.openInputStream(it)
-                val imageByteArray = srcStream?.readBytes()
-                val imageData = ImageDataFactory.create(imageByteArray)
-                val image = Image(imageData)
-                document.pdfDocument.defaultPageSize = PageSize(image.imageWidth, image.imageHeight)
-                document.add(image)
-                srcStream?.close()
-            }
-            pdfDocument.close()
-            document.close()
-
-            callBack(ScreenCommonEvents.ShowToast("Image to pdf conversion successfully"))
-            cancel()
+        val dst = FileManager.createPdfFile()
+        val pdfDocument = PdfDocument(PdfWriter(dst)).also {
+            it.defaultPageSize = PageSize.A4
         }
-    }
+        val document = Document(pdfDocument)
 
+        uriList.forEach {
+            val srcStream = resolver.openInputStream(it)
+            val imageByteArray = srcStream?.readBytes()
+            val imageData = ImageDataFactory.create(imageByteArray)
+            val image = Image(imageData)
+            document.pdfDocument.defaultPageSize = PageSize(image.imageWidth, image.imageHeight)
+            document.add(image)
+            srcStream?.close()
+        }
+        pdfDocument.close()
+        document.close()
+        return@withContext true
+    }
 }

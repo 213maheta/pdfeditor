@@ -95,10 +95,7 @@ fun PasswordDialogScreen(callback: (ScreenCommonEvents) -> Unit) {
                     modifier = Modifier
                         .padding(end = 40.dp)
                         .clickable {
-                            vm.checkPassword(
-                                contentResolver = contentResolver,
-                                callback
-                            )
+                            vm.checkPassword(contentResolver = contentResolver)
                         }
                 )
                 Text(

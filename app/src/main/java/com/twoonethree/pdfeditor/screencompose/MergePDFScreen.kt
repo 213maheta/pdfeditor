@@ -1,5 +1,6 @@
 package com.twoonethree.pdfeditor.screencompose
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,6 +50,9 @@ fun MergePDFScreen(navController: NavHostController) {
                     vm.pdfList[vm.lockedIndex].password = it.password
                     DialogViewModel.isPasswordDialogueVisible.value = false
                 }
+                is ScreenCommonEvents.ShowProgressBar -> {
+                    vm.showProgressBar.value = it.value
+                }
                 else -> {}
             }
         }
@@ -77,6 +81,10 @@ fun MergePDFScreen(navController: NavHostController) {
 
     when{
         DialogViewModel.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+    }
+
+    AnimatedVisibility(visible = vm.showProgressBar.value) {
+        CircularProgressBar(vm.showProgressValue.value)
     }
 }
 

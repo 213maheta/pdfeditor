@@ -1,6 +1,7 @@
 package com.twoonethree.pdfeditor.screencompose
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -64,6 +65,9 @@ fun ImageToPdfScreen(navController: NavController)
                 is ScreenCommonEvents.GotPassword -> {
                     DialogViewModel.isPasswordDialogueVisible.value = false
                 }
+                is ScreenCommonEvents.ShowProgressBar -> {
+                    vm.showProgressBar.value = it.value
+                }
                 else -> {}
             }
         }
@@ -92,6 +96,10 @@ fun ImageToPdfScreen(navController: NavController)
 
     when{
         DialogViewModel.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+    }
+
+    AnimatedVisibility(visible = vm.showProgressBar.value) {
+        CircularProgressBar()
     }
 }
 

@@ -184,7 +184,7 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index:Int = 0) {
             )
             {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_splash_icon),
+                    painter = painterResource(id = R.drawable.ic_default_pdf),
                     contentDescription = "",
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -272,15 +272,11 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index:Int = 0) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswordTextEdit(value: String, onValueChange: (String) -> Unit) {
-    val containerColor = colorResource(id = R.color.orange)
     TextField(
         value = value,
         onValueChange = { onValueChange(it) },
         placeholder = { Text(stringResource(R.string.enter_password))},
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = containerColor,
-            unfocusedContainerColor = containerColor,
-            disabledContainerColor = containerColor,
             cursorColor = colorResource(id = R.color.orange),
             focusedIndicatorColor = colorResource(id = R.color.orange),
             unfocusedIndicatorColor = colorResource(id = R.color.orange),
@@ -315,7 +311,7 @@ fun TextWithBorder(value: String, onClick: () -> Unit, endMargin: Dp)
 }
 
 @Composable
-fun CircularProgressBar()
+fun CircularProgressBar(progress: Float? = null)
 {
     Box(modifier = Modifier
         .fillMaxSize()
@@ -327,14 +323,26 @@ fun CircularProgressBar()
 
     )
     {
-        CircularProgressIndicator(
-            modifier = Modifier
-                .width(64.dp)
-                .align(Alignment.Center)
-            ,
-            color = colorResource(id = R.color.orange),
-            trackColor = colorResource(id = R.color.grey_light),
-        )
+        progress?.let {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .width(36.dp)
+                    .align(Alignment.Center)
+                ,
+                color = colorResource(id = R.color.orange),
+                trackColor = colorResource(id = R.color.grey),
+                progress = progress
+            )
+        }?: kotlin.run {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .width(36.dp)
+                    .align(Alignment.Center)
+                ,
+                color = colorResource(id = R.color.orange),
+                trackColor = colorResource(id = R.color.grey),
+            )
+        }
     }
 }
 

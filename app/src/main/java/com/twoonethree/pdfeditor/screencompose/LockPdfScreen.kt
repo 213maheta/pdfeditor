@@ -1,5 +1,6 @@
 package com.twoonethree.pdfeditor.screencompose
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,12 +16,12 @@ import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.dialog.PasswordDialogScreen
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
-import com.twoonethree.pdfeditor.viewmodel.PasswordProtectionViewModel
+import com.twoonethree.pdfeditor.viewmodel.LockPdfViewModel
 
 @Composable
-fun PasswordProtectionScreen(navController: NavController)
+fun LockPdfScreen(navController: NavController)
 {
-    val vm = viewModel<PasswordProtectionViewModel>()
+    val vm = viewModel<LockPdfViewModel>()
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
 
@@ -46,8 +47,9 @@ fun PasswordProtectionScreen(navController: NavController)
                     vm.selectedPdf.value.password = it.password
                     DialogViewModel.isPasswordDialogueVisible.value = false
                 }
-
-
+                is ScreenCommonEvents.ShowProgressBar -> {
+                    vm.showProgressBar.value = it.value
+                }
                 else -> {}
             }
         }
@@ -72,7 +74,7 @@ fun PasswordProtectionScreen(navController: NavController)
         }
 
     MyTopAppBar(
-        titleId = R.string.password_protection,
+        titleId = R.string.lock_pdf,
         backClick = { navController.navigateUp() },
         doneClick = { vm.setPassword(contentResolver) },
         floatBtnClick = { pickPdfDocument.launch(arrayOf(context.getString(R.string.application_pdf))) },
@@ -81,6 +83,10 @@ fun PasswordProtectionScreen(navController: NavController)
 
     when{
         DialogViewModel.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+    }
+
+    AnimatedVisibility(visible = vm.showProgressBar.value) {
+        CircularProgressBar()
     }
 }
 

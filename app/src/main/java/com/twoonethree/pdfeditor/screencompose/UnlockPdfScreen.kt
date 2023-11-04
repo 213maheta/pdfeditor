@@ -48,7 +48,6 @@ fun UnlockPdfScreen(navController: NavController)
                     DialogViewModel.isPasswordDialogueVisible.value = false
                     vm.removePassword(contentResolver)
                 }
-
                 else -> {}
             }
         }

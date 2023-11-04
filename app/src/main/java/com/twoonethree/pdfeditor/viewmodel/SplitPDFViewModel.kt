@@ -4,11 +4,14 @@ import android.content.ContentResolver
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.utilities.FileManager
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 class SplitPDFViewModel() : ViewModel() {
 
@@ -17,23 +20,37 @@ class SplitPDFViewModel() : ViewModel() {
 
      val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
 
+     val showProgressBar = mutableStateOf(false)
+
+
      fun setUiIntent(value: ScreenCommonEvents) {
           uiIntent.value = value
      }
 
-     fun saveSplitPdf(contentResolver: ContentResolver)
+     fun saveSplitPdf(contentResolver: ContentResolver) = viewModelScope.launch(Dispatchers.IO)
      {
           when{
                splitPointList.size<1 -> setUiIntent(ScreenCommonEvents.ShowToast("Add at least one split point"))
                else ->{
-                    PdfUtilities.splitPdf(
-                         contentResolver,
-                         selectedPdf.value,
-                         FileManager.getSplitFilePath(),
-                         splitPointList.toList().sortedBy { it },
-                         selectedPdf.value.password,
-                         ::setUiIntent
-                    )
+                    selectedPdf.value.uri?.let {
+
+                         setUiIntent(ScreenCommonEvents.ShowProgressBar(true))
+
+                         val isSuccess = PdfUtilities.splitPdf(
+                              contentResolver,
+                              it,
+                              FileManager.getSplitFilePath(),
+                              splitPointList.toList().sortedBy { it },
+                              selectedPdf.value.password)
+
+                         when(isSuccess)
+                         {
+                              true -> setUiIntent(ScreenCommonEvents.ShowToast("Pdf splitted successfully"))
+                              false -> setUiIntent(ScreenCommonEvents.ShowToast("Something gone wrong"))
+                         }
+
+                         setUiIntent(ScreenCommonEvents.ShowProgressBar(false))
+                    }
                }
           }
      }
