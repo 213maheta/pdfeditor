@@ -1,6 +1,7 @@
 package com.twoonethree.pdfeditor.mycreation
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,15 +48,19 @@ import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.screencompose.CircularProgressBar
 import com.twoonethree.pdfeditor.screencompose.ModelBottomSheetScreen
+import com.twoonethree.pdfeditor.screencompose.ShowSnackBar
 import com.twoonethree.pdfeditor.screencompose.myToast
 import com.twoonethree.pdfeditor.utilities.StringUtilities
+import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
 import java.io.File
 
 @Composable
 fun MyCreationScreen(navController: NavHostController) {
 
     val vm = viewModel<MyCreationViewModel>()
+    val vmCommon = viewModel<CommonComposeViewModel>()
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
     val onItemClick = { value: String ->
@@ -73,17 +78,23 @@ fun MyCreationScreen(navController: NavHostController) {
         vm.getAllPdf(contentResolver = contentResolver)
         vm.uiIntent.collect {
             when (it) {
-                is ScreenCommonEvents.ShowToast -> {
-                    myToast(context, it.message)
+                is ScreenCommonEvents.ShowSnackBar -> {
+                    vmCommon.message.value = it.value
+                    vmCommon.status = it.color
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-
                 else -> {}
             }
         }
     }
     CreatedPdfList(vm.pdfList.toList(), onItemClick, onMenuClick)
     ModelBottomSheetScreen()
+    AnimatedVisibility(visible = vm.showProgressBar.value) {
+        CircularProgressBar()
+    }
+
+    if(vmCommon.message.value.isNotEmpty())
+        ShowSnackBar()
 }
 
 @Composable
@@ -156,8 +167,8 @@ fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit, onMenuClick: (PdfDa
                     )
             )
             {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_splash_icon),
+                AsyncImage(
+                    model  = R.drawable.ic_splash_icon,
                     contentDescription = "",
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -206,25 +217,7 @@ fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit, onMenuClick: (PdfDa
                     modifier = Modifier
                         .padding(start = 20.dp)
                 )
-                Text(
-                    text = pdfData.totalPageNumber.toString(),
-                    color = Color.Black,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 10.sp,
-                    modifier = Modifier
-                        .padding(start = 20.dp)
-                )
             }
-        }
-
-        if (pdfData.totalPageNumber == 0) {
-            Icon(
-                imageVector = Icons.Default.Lock,
-                contentDescription = stringResource(R.string.lock),
-                modifier = Modifier
-                    .weight(0.1f)
-
-            )
         }
         Icon(
             imageVector = Icons.Default.Menu,

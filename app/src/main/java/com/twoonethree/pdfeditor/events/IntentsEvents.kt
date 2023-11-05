@@ -1,14 +1,15 @@
 package com.twoonethree.pdfeditor.events
 
+import androidx.compose.ui.graphics.Color
 import com.itextpdf.kernel.pdf.PdfReader
 
 
 sealed class ScreenCommonEvents{
-    data class ShowToast(val message:String):ScreenCommonEvents()
+    //data class ShowToast(val message:String):ScreenCommonEvents()
     data object ShowPasswordDialog:ScreenCommonEvents()
     data class GotPassword(val totalPageNumber: Int, val password:String):ScreenCommonEvents()
     data object EMPTY:ScreenCommonEvents()
-    data class ShowProgressBar(val value:Boolean):ScreenCommonEvents()
+    data class ShowSnackBar(val value:String, val color:Color):ScreenCommonEvents()
 }
 
 sealed class AddPageNumberSelection(val corner:String){

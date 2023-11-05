@@ -9,6 +9,9 @@ import com.twoonethree.pdfeditor.events.AddPageNumberSelection
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.ui.theme.Blue
+import com.twoonethree.pdfeditor.ui.theme.Green
+import com.twoonethree.pdfeditor.ui.theme.Orange
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -20,6 +23,8 @@ class AddPageNumberViewModel:ViewModel() {
     var totalPageNumber = 0
 
     val showProgressBar = mutableStateOf(false)
+    val showProgressValue = mutableStateOf(0f)
+
 
     val selectedCorner = mutableStateOf<AddPageNumberSelection>(AddPageNumberSelection.BOTTOM_RIGHT)
 
@@ -42,16 +47,17 @@ class AddPageNumberViewModel:ViewModel() {
                 setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
                 return@launch
             }
-            setUiIntent(ScreenCommonEvents.ShowProgressBar(true))
+            showProgressBar.value = true
             val isSuccess = PdfUtilities.addPageNumber(resolver, it, selectedPdf.value.password,::getXYposition)
+            { progress: Float -> showProgressValue.value = progress }
             when(isSuccess)
             {
-                true -> setUiIntent(ScreenCommonEvents.ShowToast("Page number added successfully"))
-                false -> setUiIntent(ScreenCommonEvents.ShowToast("Something gone wrong"))
+                true -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Page number added successfully", Green))
+                false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
             }
-            setUiIntent(ScreenCommonEvents.ShowProgressBar(false))
+            showProgressBar.value = false
         }?: kotlin.run {
-            setUiIntent(ScreenCommonEvents.ShowToast("Select file first"))
+            setUiIntent(ScreenCommonEvents.ShowSnackBar("Select file first", Blue))
         }
     }
 

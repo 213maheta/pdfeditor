@@ -11,6 +11,9 @@ import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.ui.theme.Blue
+import com.twoonethree.pdfeditor.ui.theme.Green
+import com.twoonethree.pdfeditor.ui.theme.Orange
 import com.twoonethree.pdfeditor.utilities.CachedManager
 import com.twoonethree.pdfeditor.utilities.FileManager
 import com.twoonethree.pdfeditor.utilities.FileUtilities
@@ -27,13 +30,16 @@ class MyCreationViewModel:ViewModel() {
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
     var showBottomSheet = mutableStateOf(false)
     var selectedPdf = mutableStateOf(PdfData("", "" , null,  0))
+    val showProgressBar = mutableStateOf(false)
+
     fun getAllPdf(contentResolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
     {
-        val addAllPdf:(pdfList:List<PdfData>) -> Unit = {
-            pdfList.clear()
-            pdfList.addAll(it)
-        }
-        FileUtilities.getAllPdf(contentResolver, addAllPdf)
+        showProgressBar.value = true
+
+        val data = FileUtilities.getAllPdf(contentResolver)
+        pdfList.clear()
+        pdfList.addAll(data)
+        showProgressBar.value = false
     }
 
     fun setUiIntent(value: ScreenCommonEvents) {
@@ -44,9 +50,9 @@ class MyCreationViewModel:ViewModel() {
     {
         if(selectedPdf.value.uri == null)
             return@launch
-        if(newName.isEmpty())
+        if(newName.replace(".pdf", "").isEmpty())
         {
-            setUiIntent(ScreenCommonEvents.ShowToast("Give proper name"))
+            setUiIntent(ScreenCommonEvents.ShowSnackBar("Give proper name", Blue))
             return@launch
         }
         val sameNamePdf = pdfList.firstOrNull {
@@ -54,7 +60,7 @@ class MyCreationViewModel:ViewModel() {
         }
         if(sameNamePdf != null)
         {
-            setUiIntent(ScreenCommonEvents.ShowToast("This name already taken"))
+            setUiIntent(ScreenCommonEvents.ShowSnackBar("This name already taken", Blue))
             return@launch
         }
         val isSuccess = FileManager.renameFile(selectedPdf.value.uri!!, newName)
@@ -68,11 +74,11 @@ class MyCreationViewModel:ViewModel() {
                     val newPdfData = it.copy(name = newName, uri = newUri.toUri())
                     val index = pdfList.indexOf(selectedPdf.value)
                     pdfList.set(index, newPdfData)
-                    setUiIntent(ScreenCommonEvents.ShowToast("File renamed successfully"))
+                    setUiIntent(ScreenCommonEvents.ShowSnackBar("File renamed successfully", Green))
                     showBottomSheet.value = false
                 }
             }
-            false -> setUiIntent(ScreenCommonEvents.ShowToast("Something gone wrong"))
+            false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
         }
     }
 
@@ -83,7 +89,7 @@ class MyCreationViewModel:ViewModel() {
             if(isSuccess)
             {
                 pdfList.remove(selectedPdf.value)
-                setUiIntent(ScreenCommonEvents.ShowToast("File deleted successfully"))
+                setUiIntent(ScreenCommonEvents.ShowSnackBar("File deleted successfully", Green))
                 showBottomSheet.value = false
             }
         }

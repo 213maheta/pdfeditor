@@ -9,6 +9,9 @@ import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.utilities.FileManager
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.ui.theme.Blue
+import com.twoonethree.pdfeditor.ui.theme.Green
+import com.twoonethree.pdfeditor.ui.theme.Orange
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -30,11 +33,11 @@ class SplitPDFViewModel() : ViewModel() {
      fun saveSplitPdf(contentResolver: ContentResolver) = viewModelScope.launch(Dispatchers.IO)
      {
           when{
-               splitPointList.size<1 -> setUiIntent(ScreenCommonEvents.ShowToast("Add at least one split point"))
+               splitPointList.size<1 -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Add at least one split point", Blue))
                else ->{
                     selectedPdf.value.uri?.let {
 
-                         setUiIntent(ScreenCommonEvents.ShowProgressBar(true))
+                         showProgressBar.value = true
 
                          val isSuccess = PdfUtilities.splitPdf(
                               contentResolver,
@@ -45,11 +48,11 @@ class SplitPDFViewModel() : ViewModel() {
 
                          when(isSuccess)
                          {
-                              true -> setUiIntent(ScreenCommonEvents.ShowToast("Pdf splitted successfully"))
-                              false -> setUiIntent(ScreenCommonEvents.ShowToast("Something gone wrong"))
+                              true -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Pdf splitted successfully", Green))
+                              false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
                          }
 
-                         setUiIntent(ScreenCommonEvents.ShowProgressBar(false))
+                         showProgressBar.value = false
                     }
                }
           }
@@ -67,9 +70,9 @@ class SplitPDFViewModel() : ViewModel() {
           val splitPoint = value.toInt()
 
           when{
-               splitPoint > selectedPdf.value.totalPageNumber -> setUiIntent(ScreenCommonEvents.ShowToast("Split point should be less than total page count"))
-               splitPoint < 1 -> setUiIntent(ScreenCommonEvents.ShowToast("Split point be should more than 0"))
-               splitPointList.contains(splitPoint) -> setUiIntent(ScreenCommonEvents.ShowToast("Already added"))
+               splitPoint > selectedPdf.value.totalPageNumber -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Split point should be less than total page count", Blue))
+               splitPoint < 1 -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Split point be should more than 0", Blue))
+               splitPointList.contains(splitPoint) -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Already added", Blue))
                else -> splitPointList.add(splitPoint)
           }
      }

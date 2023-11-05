@@ -22,20 +22,24 @@ import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.viewmodel.MergePdfViewModel
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
+import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MergePDFScreen(navController: NavHostController) {
 
     val vm = viewModel<MergePdfViewModel>()
+    val vmCommon = viewModel<CommonComposeViewModel>()
+
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
 
     LaunchedEffect(key1 = Unit) {
         vm.uiIntent.collect {
             when (it) {
-                is ScreenCommonEvents.ShowToast -> {
-                    myToast(context, it.message)
+                is ScreenCommonEvents.ShowSnackBar -> {
+                    vmCommon.message.value = it.value
+                    vmCommon.status = it.color
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.ShowPasswordDialog -> {
@@ -49,9 +53,6 @@ fun MergePDFScreen(navController: NavHostController) {
                     vm.pdfList[vm.lockedIndex].totalPageNumber = it.totalPageNumber
                     vm.pdfList[vm.lockedIndex].password = it.password
                     DialogViewModel.isPasswordDialogueVisible.value = false
-                }
-                is ScreenCommonEvents.ShowProgressBar -> {
-                    vm.showProgressBar.value = it.value
                 }
                 else -> {}
             }
@@ -86,6 +87,8 @@ fun MergePDFScreen(navController: NavHostController) {
     AnimatedVisibility(visible = vm.showProgressBar.value) {
         CircularProgressBar(vm.showProgressValue.value)
     }
+
+    ShowSnackBar()
 }
 
 @Composable

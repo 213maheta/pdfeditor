@@ -42,11 +42,14 @@ import com.twoonethree.pdfeditor.dialog.PasswordDialogScreen
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.viewmodel.OrganizePdfViewModel
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
+import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
 
 @Composable
 fun OrganizePdfScreen(navController: NavController)
 {
     val vm = viewModel<OrganizePdfViewModel>()
+    val vmCommon = viewModel<CommonComposeViewModel>()
+
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
     val onDelete = vm::removePage
@@ -61,8 +64,9 @@ fun OrganizePdfScreen(navController: NavController)
     LaunchedEffect(key1 = Unit) {
         vm.uiIntent.collect {
             when (it) {
-                is ScreenCommonEvents.ShowToast -> {
-                    myToast(context, it.message)
+                is ScreenCommonEvents.ShowSnackBar -> {
+                    vmCommon.message.value = it.value
+                    vmCommon.status = it.color
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.ShowPasswordDialog -> {
@@ -76,9 +80,6 @@ fun OrganizePdfScreen(navController: NavController)
                     vm.setPageNumberList()
                     DialogViewModel.isPasswordDialogueVisible.value = false
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
-                }
-                is ScreenCommonEvents.ShowProgressBar -> {
-                    vm.showProgressBar.value = it.value
                 }
                 else -> {}
             }
@@ -115,6 +116,8 @@ fun OrganizePdfScreen(navController: NavController)
     AnimatedVisibility(visible = vm.showProgressBar.value) {
         CircularProgressBar()
     }
+
+    ShowSnackBar()
 }
 
 @Composable

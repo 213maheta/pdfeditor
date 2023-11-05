@@ -153,6 +153,7 @@ object PdfUtilities {
 
     suspend fun cachedThumbnail(resolver: ContentResolver, uri: Uri): File? =
         withContext(Dispatchers.IO) {
+            Log.e("TAG", "cachedThumbnail: ${uri}", )
             resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
                 try {
                     val pdfRenderer = PdfRenderer(parcelFileDescriptor).openPage(0)
@@ -202,6 +203,7 @@ object PdfUtilities {
         uri: Uri,
         password: String?,
         getXYPosition: (Float, Float) -> Pair<Float, Float>,
+        onProgress: (Float) -> Unit,
     ): Boolean = withContext(Dispatchers.IO) {
         val src = resolver.openInputStream(uri)
         val dst = FileManager.createPdfFile()
@@ -227,6 +229,8 @@ object PdfUtilities {
                 VerticalAlignment.MIDDLE,
                 0f
             )
+            val progress = i * 1f / numberOfPages
+            onProgress(progress)
         }
         src?.close()
         pdfDoc.close()
@@ -240,6 +244,7 @@ object PdfUtilities {
         uri: Uri,
         value: Int,
         password: String?,
+        onProgress: (Float) -> Unit,
     ): Boolean = withContext(Dispatchers.IO) {
         val src = resolver.openInputStream(uri)
         val dst = FileManager.createPdfFile()
@@ -255,6 +260,8 @@ object PdfUtilities {
         for (i in 1..numberOfPages) {
             val page = pdfDoc.getPage(i)
             page.setRotation(value)
+            val progress = i * 1f / numberOfPages
+            onProgress(progress)
         }
         src?.close()
         pdfDoc.close()
@@ -287,7 +294,6 @@ object PdfUtilities {
         password: String,
         prePassword: String?,
     ): Boolean = withContext(Dispatchers.IO) {
-
         val dst = FileManager.createPdfFile()
         val props = WriterProperties()
             .setStandardEncryption(

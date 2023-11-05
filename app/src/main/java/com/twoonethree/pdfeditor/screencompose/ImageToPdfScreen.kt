@@ -35,11 +35,14 @@ import com.twoonethree.pdfeditor.dialog.PasswordDialogScreen
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.viewmodel.ImageToPdfViewModel
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
+import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
 
 @Composable
 fun ImageToPdfScreen(navController: NavController)
 {
     val vm = viewModel<ImageToPdfViewModel>()
+    val vmCommon = viewModel<CommonComposeViewModel>()
+
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
     val onDelete = vm::removePage
@@ -55,8 +58,9 @@ fun ImageToPdfScreen(navController: NavController)
     LaunchedEffect(key1 = Unit) {
         vm.uiIntent.collect {
             when (it) {
-                is ScreenCommonEvents.ShowToast -> {
-                    myToast(context, it.message)
+                is ScreenCommonEvents.ShowSnackBar -> {
+                    vmCommon.message.value = it.value
+                    vmCommon.status = it.color
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.ShowPasswordDialog -> {
@@ -64,9 +68,6 @@ fun ImageToPdfScreen(navController: NavController)
                 }
                 is ScreenCommonEvents.GotPassword -> {
                     DialogViewModel.isPasswordDialogueVisible.value = false
-                }
-                is ScreenCommonEvents.ShowProgressBar -> {
-                    vm.showProgressBar.value = it.value
                 }
                 else -> {}
             }
@@ -101,6 +102,8 @@ fun ImageToPdfScreen(navController: NavController)
     AnimatedVisibility(visible = vm.showProgressBar.value) {
         CircularProgressBar()
     }
+
+    ShowSnackBar()
 }
 
 @Composable

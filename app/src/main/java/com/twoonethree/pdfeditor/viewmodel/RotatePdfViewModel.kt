@@ -8,6 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.ui.theme.Blue
+import com.twoonethree.pdfeditor.ui.theme.Green
+import com.twoonethree.pdfeditor.ui.theme.Orange
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -19,6 +22,8 @@ class RotatePdfViewModel:ViewModel() {
     var previousOrientation = -1
     val showProgressBar = mutableStateOf(false)
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
+    val showProgressValue = mutableStateOf(0f)
+
 
     fun setUiIntent(value: ScreenCommonEvents) {
         uiIntent.value = value
@@ -34,7 +39,7 @@ class RotatePdfViewModel:ViewModel() {
        selectedPdf.value.uri?.let {
             if(currentOrientation.value == previousOrientation)
             {
-                setUiIntent(ScreenCommonEvents.ShowToast("Current orientation is same as selected"))
+                setUiIntent(ScreenCommonEvents.ShowSnackBar("Current orientation is same as selected", Blue))
                 return@launch
             }
             if(selectedPdf.value.totalPageNumber == 0)
@@ -42,23 +47,23 @@ class RotatePdfViewModel:ViewModel() {
                 setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
                 return@launch
             }
-           setUiIntent(ScreenCommonEvents.ShowProgressBar(true))
+           showProgressBar.value = true
            val isSuccess = PdfUtilities.changeOrientation(resolver = resolver,
                 uri = it,
                 value = currentOrientation.value,
                 password = selectedPdf.value.password
-            )
+            ){ progress: Float -> showProgressValue.value = progress }
            when(isSuccess)
            {
                true -> {
                    previousOrientation = currentOrientation.value
-                   setUiIntent(ScreenCommonEvents.ShowToast("Orientation changed successfully"))
+                   setUiIntent(ScreenCommonEvents.ShowSnackBar("Orientation changed successfully", Green))
                }
-               false -> setUiIntent(ScreenCommonEvents.ShowToast("Something gone wrong"))
+               false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
            }
-           setUiIntent(ScreenCommonEvents.ShowProgressBar(false))
+           showProgressBar.value = false
        }?: kotlin.run {
-            setUiIntent(ScreenCommonEvents.ShowToast("Select file first"))
+            setUiIntent(ScreenCommonEvents.ShowSnackBar("Select file first", Blue))
         }
     }
 
@@ -69,7 +74,7 @@ class RotatePdfViewModel:ViewModel() {
             currentOrientation.value =  PdfUtilities.getOrientation(resolver, it)
             previousOrientation = currentOrientation.value
         }?: kotlin.run {
-            setUiIntent(ScreenCommonEvents.ShowToast("Select file first"))
+            setUiIntent(ScreenCommonEvents.ShowSnackBar("Select file first", Blue))
         }
     }
 

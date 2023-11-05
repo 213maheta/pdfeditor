@@ -7,6 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.ui.theme.Blue
+import com.twoonethree.pdfeditor.ui.theme.Green
+import com.twoonethree.pdfeditor.ui.theme.Orange
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -32,7 +35,7 @@ class UnlockPdfViewModel:ViewModel() {
 
             if(selectedPdf.value.totalPageNumber > 0)
             {
-                setUiIntent(ScreenCommonEvents.ShowToast("This file is not password protected"))
+                setUiIntent(ScreenCommonEvents.ShowSnackBar("This file is not password protected", Blue))
                 return
             }
             if(selectedPdf.value.totalPageNumber == 0)
@@ -41,7 +44,7 @@ class UnlockPdfViewModel:ViewModel() {
                 return
             }
         }?: kotlin.run {
-            setUiIntent(ScreenCommonEvents.ShowToast("Select file first"))
+            setUiIntent(ScreenCommonEvents.ShowSnackBar("Select file first", Blue))
         }
     }
 
@@ -55,8 +58,8 @@ class UnlockPdfViewModel:ViewModel() {
             )
             when(isSuccess)
             {
-                true -> setUiIntent(ScreenCommonEvents.ShowToast("Password removed successfully"))
-                false -> setUiIntent(ScreenCommonEvents.ShowToast("Something gone wrong"))
+                true -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Password removed successfully", Green))
+                false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
             }
         }
     }

@@ -38,7 +38,7 @@ object FileUtilities {
         return "${MathUtilities.roundOffDecimal(value.toLong() / 1000000.0)} mb"
     }
 
-    suspend fun getAllPdf(resolver: ContentResolver, addAllPdf: (pdfList: List<PdfData>) -> Unit) = withContext(Dispatchers.IO){
+    suspend fun getAllPdf(resolver: ContentResolver):List<PdfData> = withContext(Dispatchers.IO){
 
             val pdfList = mutableListOf<PdfData>()
 
@@ -82,7 +82,6 @@ object FileUtilities {
                             val file = File(filePath)
                             val uri = file.toUri()
                             val size = convertByteToMB(file.length().toString())
-                            val totalPageNumber =  PdfUtilities.getTotalPageNumber(resolver = resolver, uri = uri)
                             val dateTime =
                                 if (modifiedDate.isNullOrEmpty())
                                     TimeUtilities.convertLongToTime(addedDate.toLong())
@@ -93,14 +92,14 @@ object FileUtilities {
                                 name = name,
                                 size = size,
                                 uri = file.toUri(),
-                                totalPageNumber = totalPageNumber,
+                                totalPageNumber = 123,
                                 date = dateTime
                             )
                             pdfList.add(pdfData)
                         } while (cursor.moveToNext())
                     }
                 }
-            addAllPdf(pdfList)
+        return@withContext pdfList
 
     }
 }

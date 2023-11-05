@@ -41,11 +41,14 @@ import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.dialog.PasswordDialogScreen
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
+import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
 import com.twoonethree.pdfeditor.viewmodel.SplitPDFViewModel
 
 @Composable
 fun SplitPDFScreen(navController: NavHostController) {
     val vm = viewModel<SplitPDFViewModel>()
+    val vmCommon = viewModel<CommonComposeViewModel>()
+
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
 
@@ -58,8 +61,9 @@ fun SplitPDFScreen(navController: NavHostController) {
     LaunchedEffect(key1 = Unit) {
         vm.uiIntent.collect {
             when (it) {
-                is ScreenCommonEvents.ShowToast -> {
-                    myToast(context, it.message)
+                is ScreenCommonEvents.ShowSnackBar -> {
+                    vmCommon.message.value = it.value
+                    vmCommon.status = it.color
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.ShowPasswordDialog -> {
@@ -71,9 +75,6 @@ fun SplitPDFScreen(navController: NavHostController) {
                     vm.selectedPdf.value.totalPageNumber = it.totalPageNumber
                     vm.selectedPdf.value.password = it.password
                     DialogViewModel.isPasswordDialogueVisible.value = false
-                }
-                is ScreenCommonEvents.ShowProgressBar -> {
-                    vm.showProgressBar.value = it.value
                 }
                 else -> {}
             }
@@ -111,6 +112,8 @@ fun SplitPDFScreen(navController: NavHostController) {
     AnimatedVisibility(visible = vm.showProgressBar.value) {
         CircularProgressBar()
     }
+
+    ShowSnackBar()
 }
 
 @Composable

@@ -27,11 +27,12 @@ import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.screencompose.PasswordTextEdit
 import com.twoonethree.pdfeditor.screencompose.TextWithBorder
 import com.twoonethree.pdfeditor.screencompose.myToast
+import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
 
 @Composable
 fun PasswordDialogScreen(callback: (ScreenCommonEvents) -> Unit) {
     val vm = viewModel<DialogViewModel>()
-    val context = LocalContext.current
+    val vmCommon = viewModel<CommonComposeViewModel>()
     val contentResolver = LocalContext.current.contentResolver
     val pdfData = DialogViewModel.selectedPdf.value
 
@@ -39,15 +40,15 @@ fun PasswordDialogScreen(callback: (ScreenCommonEvents) -> Unit) {
     LaunchedEffect(key1 = Unit) {
         vm.uiIntent.collect {
             when (it) {
-                is ScreenCommonEvents.ShowToast -> {
-                    myToast(context, it.message)
+                is ScreenCommonEvents.ShowSnackBar -> {
+                    vmCommon.message.value = it.value
+                    vmCommon.status = it.color
+                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
-
                 is ScreenCommonEvents.GotPassword -> {
                     DialogViewModel.selectedPdf.value.totalPageNumber = it.totalPageNumber
                     DialogViewModel.isPasswordDialogueVisible.value = false
                 }
-
                 else -> {}
             }
         }

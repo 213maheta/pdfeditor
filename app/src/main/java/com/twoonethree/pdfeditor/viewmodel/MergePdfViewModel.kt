@@ -9,6 +9,9 @@ import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.utilities.FileManager
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.ui.theme.Blue
+import com.twoonethree.pdfeditor.ui.theme.Green
+import com.twoonethree.pdfeditor.ui.theme.Orange
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -26,13 +29,13 @@ class MergePdfViewModel() : ViewModel() {
         when (pdfList.toList().size) {
             0,1 -> {
                 val message = "Select at least two file"
-                setUiIntent(ScreenCommonEvents.ShowToast(message))
+                setUiIntent(ScreenCommonEvents.ShowSnackBar(message, Blue))
                 return@launch
             }
             else -> {
                 if(checkAllUnlocked())
                 {
-                    setUiIntent(ScreenCommonEvents.ShowProgressBar(true))
+                    showProgressBar.value = true
 
                     val isSuccess = PdfUtilities.mergePdf(
                         contentResolver,
@@ -41,10 +44,10 @@ class MergePdfViewModel() : ViewModel() {
                     ) { progress: Float -> showProgressValue.value = progress }
                     when(isSuccess)
                     {
-                        true -> setUiIntent(ScreenCommonEvents.ShowToast("Merged successfully"))
-                        false -> setUiIntent(ScreenCommonEvents.ShowToast("Something gone wrong"))
+                        true -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Merged successfully", Green))
+                        false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
                     }
-                    setUiIntent(ScreenCommonEvents.ShowProgressBar(false))
+                    showProgressBar.value = false
                 }
             }
         }

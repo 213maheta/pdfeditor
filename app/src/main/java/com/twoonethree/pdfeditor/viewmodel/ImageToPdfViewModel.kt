@@ -9,6 +9,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.ui.theme.Blue
+import com.twoonethree.pdfeditor.ui.theme.Green
+import com.twoonethree.pdfeditor.ui.theme.Orange
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -45,20 +48,20 @@ class ImageToPdfViewModel:ViewModel() {
         uriList.let {
             if(it.isEmpty())
             {
-                setUiIntent(ScreenCommonEvents.ShowToast("Select atleast one image"))
+                setUiIntent(ScreenCommonEvents.ShowSnackBar("Select atleast one image", Blue))
                 return@launch
             }
-            setUiIntent(ScreenCommonEvents.ShowProgressBar(true))
+            showProgressBar.value = true
             val isSuccess =PdfUtilities.imageToPdf(
                 resolver = resolver,
                 uriList = it,
             )
             when(isSuccess)
             {
-                true -> setUiIntent(ScreenCommonEvents.ShowToast("Image to pdf conversion successfully\""))
-                false -> setUiIntent(ScreenCommonEvents.ShowToast("Something gone wrong"))
+                true -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Image to pdf conversion successfully", Green))
+                false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
             }
-            setUiIntent(ScreenCommonEvents.ShowProgressBar(false))
+            showProgressBar.value = false
         }
     }
 

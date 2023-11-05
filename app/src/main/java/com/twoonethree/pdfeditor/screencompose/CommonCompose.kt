@@ -28,6 +28,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -52,10 +54,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +71,9 @@ fun MyTopAppBar(
     floatBtnClick: () -> Unit,
     innerContent: @Composable (paddingvalues: PaddingValues) -> Unit
 ) {
+    val vm = viewModel<CommonComposeViewModel>()
+    val snackBarHostState = remember { SnackbarHostState() }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -102,6 +110,7 @@ fun MyTopAppBar(
                         tint = Color.White,
                     )
                 },
+
                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = colorResource(id = R.color.orange_light))
             )
         },
@@ -119,14 +128,14 @@ fun MyTopAppBar(
                     tint = Color.White
                 )
             }
-        }
+        },
     ) { contentPadding ->
         innerContent(contentPadding)
     }
 }
 
 @Composable
-fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index:Int = 0) {
+fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
     val resolver = LocalContext.current.contentResolver
 
 
@@ -275,7 +284,7 @@ fun PasswordTextEdit(value: String, onValueChange: (String) -> Unit) {
     TextField(
         value = value,
         onValueChange = { onValueChange(it) },
-        placeholder = { Text(stringResource(R.string.enter_password))},
+        placeholder = { Text(stringResource(R.string.enter_password)) },
         colors = TextFieldDefaults.colors(
             cursorColor = colorResource(id = R.color.orange),
             focusedIndicatorColor = colorResource(id = R.color.orange),
@@ -288,8 +297,7 @@ fun PasswordTextEdit(value: String, onValueChange: (String) -> Unit) {
 }
 
 @Composable
-fun TextWithBorder(value: String, onClick: () -> Unit, endMargin: Dp)
-{
+fun TextWithBorder(value: String, onClick: () -> Unit, endMargin: Dp) {
     Text(
         text = value,
         color = colorResource(id = R.color.orange),
@@ -311,8 +319,7 @@ fun TextWithBorder(value: String, onClick: () -> Unit, endMargin: Dp)
 }
 
 @Composable
-fun CircularProgressBar(progress: Float? = null)
-{
+fun CircularProgressBar(progress: Float? = null) {
     Box(modifier = Modifier
         .fillMaxSize()
         .clickable { }
@@ -327,18 +334,16 @@ fun CircularProgressBar(progress: Float? = null)
             CircularProgressIndicator(
                 modifier = Modifier
                     .width(36.dp)
-                    .align(Alignment.Center)
-                ,
+                    .align(Alignment.Center),
                 color = colorResource(id = R.color.orange),
                 trackColor = colorResource(id = R.color.grey),
                 progress = progress
             )
-        }?: kotlin.run {
+        } ?: kotlin.run {
             CircularProgressIndicator(
                 modifier = Modifier
                     .width(36.dp)
-                    .align(Alignment.Center)
-                ,
+                    .align(Alignment.Center),
                 color = colorResource(id = R.color.orange),
                 trackColor = colorResource(id = R.color.grey),
             )
@@ -349,4 +354,44 @@ fun CircularProgressBar(progress: Float? = null)
 
 fun myToast(context: Context, message: String) {
     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+}
+
+@Composable
+fun ShowSnackBar() {
+
+    val vm = viewModel<CommonComposeViewModel>()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(key1 = vm.message.value)
+    {
+        if (vm.message.value.isNotEmpty()) {
+            snackbarHostState.showSnackbar(vm.message.value)
+            vm.message.value = ""
+        }
+    }
+
+    SnackbarHost(hostState = snackbarHostState) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        )
+        {
+            Text(
+                modifier = Modifier
+                    .padding(4.dp)
+                    .fillMaxWidth()
+                    .padding(vertical = 30.dp)
+                    .graphicsLayer {
+                        shadowElevation = 5f
+                    }
+                    .background(color = vm.status)
+                    .padding(vertical = 10.dp)
+                    .align(Alignment.BottomCenter),
+                text = vm.message.value,
+                color = Color.White,
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
 }

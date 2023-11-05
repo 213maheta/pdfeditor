@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.ui.theme.Green
+import com.twoonethree.pdfeditor.ui.theme.Orange
 import com.twoonethree.pdfeditor.utilities.FileManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,8 +54,8 @@ class DialogViewModel : ViewModel() {
                         )
                     )
                 }
-                value == 0 -> setUiIntent(ScreenCommonEvents.ShowToast("Password is incorrect"))
-                value == -1 -> setUiIntent(ScreenCommonEvents.ShowToast("Something went wrong"))
+                value == 0 -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Password is incorrect", Green))
+                value == -1 -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something went wrong", Orange))
             }
         }
     }

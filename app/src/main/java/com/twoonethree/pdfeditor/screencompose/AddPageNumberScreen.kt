@@ -32,12 +32,15 @@ import com.twoonethree.pdfeditor.events.AddPageNumberSelection
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.viewmodel.AddPageNumberViewModel
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
+import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
 
 
 @Composable
 fun AddPageNumberScreen(navController: NavController)
 {
     val vm = viewModel<AddPageNumberViewModel>()
+    val vmCommon = viewModel<CommonComposeViewModel>()
+
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
     val onCornerClick = {value:AddPageNumberSelection -> vm.selectedCorner.value = value}
@@ -53,8 +56,9 @@ fun AddPageNumberScreen(navController: NavController)
     LaunchedEffect(key1 = Unit) {
         vm.uiIntent.collect {
             when (it) {
-                is ScreenCommonEvents.ShowToast -> {
-                    myToast(context, it.message)
+                is ScreenCommonEvents.ShowSnackBar -> {
+                    vmCommon.message.value = it.value
+                    vmCommon.status = it.color
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.ShowPasswordDialog -> {
@@ -67,9 +71,7 @@ fun AddPageNumberScreen(navController: NavController)
                     vm.selectedPdf.value.password = it.password
                     DialogViewModel.isPasswordDialogueVisible.value = false
                 }
-                is ScreenCommonEvents.ShowProgressBar -> {
-                    vm.showProgressBar.value = it.value
-                }
+
                 else -> {}
             }
         }
@@ -104,8 +106,9 @@ fun AddPageNumberScreen(navController: NavController)
     }
 
     AnimatedVisibility(visible = vm.showProgressBar.value) {
-        CircularProgressBar()
-    }
+        CircularProgressBar(vm.showProgressValue.value)    }
+
+    ShowSnackBar()
 }
 
 @Composable
@@ -151,7 +154,7 @@ fun CornerCard(
             .height(100.dp)
             .padding(8.dp)
             .background(
-                color = if(selected) colorResource(id = R.color.orange) else colorResource(id = R.color.white),
+                color = if (selected) colorResource(id = R.color.orange) else colorResource(id = R.color.white),
                 shape = RoundedCornerShape(8.dp)
             )
             .border(

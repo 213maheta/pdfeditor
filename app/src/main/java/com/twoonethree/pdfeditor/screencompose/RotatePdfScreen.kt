@@ -35,10 +35,13 @@ import com.twoonethree.pdfeditor.dialog.PasswordDialogScreen
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.viewmodel.RotatePdfViewModel
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
+import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
 
 @Composable
 fun RotatePdfScreen(navController: NavController) {
     val vm = viewModel<RotatePdfViewModel>()
+    val vmCommon = viewModel<CommonComposeViewModel>()
+
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
     val onOrientationClick = {value:Int -> vm.currentOrientation.value = value}
@@ -53,8 +56,9 @@ fun RotatePdfScreen(navController: NavController) {
     LaunchedEffect(key1 = Unit) {
         vm.uiIntent.collect {
             when (it) {
-                is ScreenCommonEvents.ShowToast -> {
-                    myToast(context, it.message)
+                is ScreenCommonEvents.ShowSnackBar -> {
+                    vmCommon.message.value = it.value
+                    vmCommon.status = it.color
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.ShowPasswordDialog -> {
@@ -67,9 +71,7 @@ fun RotatePdfScreen(navController: NavController) {
                     vm.selectedPdf.value.password = it.password
                     DialogViewModel.isPasswordDialogueVisible.value = false
                 }
-                is ScreenCommonEvents.ShowProgressBar -> {
-                    vm.showProgressBar.value = it.value
-                }
+
                 else -> {}
             }
         }
@@ -104,9 +106,10 @@ fun RotatePdfScreen(navController: NavController) {
     }
 
     AnimatedVisibility(visible = vm.showProgressBar.value) {
-        CircularProgressBar()
+        CircularProgressBar(vm.showProgressValue.value)
     }
 
+    ShowSnackBar()
 }
 
 
