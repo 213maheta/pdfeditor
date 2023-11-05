@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -60,7 +62,6 @@ import com.twoonethree.pdfeditor.dialog.DialogViewModel
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
-import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -316,6 +317,41 @@ fun TextWithBorder(value: String, onClick: () -> Unit, endMargin: Dp) {
             }
             .padding(4.dp)
     )
+}
+
+@Composable
+fun ButtonWithIcon(
+    value: String,
+    onClick: () -> Unit,
+    backgroundColor: Color,
+    textColor: Color,
+    iconTint:Color,
+    iconId: ImageVector
+)
+{
+    Row(
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+        .width(100.dp)
+        .border(
+            width = 1.dp,
+            color = colorResource(id = R.color.orange),
+            shape = RoundedCornerShape(8.dp))
+        .background(color = backgroundColor, shape = RoundedCornerShape(8.dp))
+        .clickable {
+            onClick()
+        }
+        .padding(4.dp))
+    {
+        Icon(imageVector = iconId, contentDescription = "Delete", tint = iconTint)
+        Text(
+            text = value,
+            color = textColor,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+    }
 }
 
 @Composable

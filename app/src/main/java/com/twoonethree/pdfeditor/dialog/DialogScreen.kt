@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -18,15 +21,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
+import com.twoonethree.pdfeditor.screencompose.ButtonWithIcon
 import com.twoonethree.pdfeditor.screencompose.PasswordTextEdit
 import com.twoonethree.pdfeditor.screencompose.TextWithBorder
-import com.twoonethree.pdfeditor.screencompose.myToast
+import com.twoonethree.pdfeditor.ui.theme.Orange
 import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
 
 @Composable
@@ -123,30 +128,44 @@ fun DeleteDialogScreen(callback: () -> Unit) {
                 .fillMaxWidth()
                 .padding(5.dp),
             shape = RoundedCornerShape(5.dp),
+
         )
         {
             Text(
-                text = "Are you sure want to delete this?",
+                text = "Delete 1 File permanently",
                 color = Color.Black,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 15.sp,
+                textAlign = TextAlign.Center,
+                fontSize = 18.sp,
                 modifier = Modifier
                     .padding(start = 10.dp, top = 10.dp)
+                    .fillMaxWidth()
             )
             Row(
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(end = 5.dp, top = 20.dp, bottom = 20.dp)
             ) {
-                TextWithBorder(value = "Yes", onClick = {
-                    callback()
-                    DialogViewModel.isDeleteDialogVisible.value = false}, endMargin = 20.dp
+
+                ButtonWithIcon(
+                    value = "Cancel",
+                    onClick = { DialogViewModel.isDeleteDialogVisible.value = false},
+                    backgroundColor = Color.White,
+                    textColor = Orange,
+                    iconTint = Color.Black,
+                    iconId = Icons.Default.Clear
                 )
 
-                TextWithBorder(
-                    value = "Cancel", onClick = {
-                        DialogViewModel.isDeleteDialogVisible.value = false}, endMargin = 10.dp
+                ButtonWithIcon(
+                    value = "Delete",
+                    onClick = {
+                        callback()
+                        DialogViewModel.isDeleteDialogVisible.value = false},
+                    backgroundColor = Orange,
+                    textColor = Color.White,
+                    iconTint = Color.White,
+                    iconId = Icons.Default.Delete
                 )
             }
         }
