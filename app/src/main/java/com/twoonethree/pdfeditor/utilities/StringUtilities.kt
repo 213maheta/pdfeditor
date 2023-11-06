@@ -13,6 +13,7 @@ object ScreenName {
     const val UNLOCK_PASSWORD_SCREEN = "unlock_password_screen"
     const val ORGANIZE_PDF_SCREEN = "organize_pdf_screen"
     const val IMAGE_TO_PDF_SCREEN = "image_to_pdf_screen"
+    const val ADD_WATERMARK_SCREEN = "add_watermark_screen"
 }
 
 object StringUtilities {

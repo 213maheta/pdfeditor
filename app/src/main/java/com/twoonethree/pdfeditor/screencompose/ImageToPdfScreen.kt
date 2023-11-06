@@ -49,9 +49,9 @@ fun ImageToPdfScreen(navController: NavController)
     val onDelete = vm::removePage
     val changeOrder = vm::changePosition
 
-    val imagePicker = ImageLauncher {
+    val imagePicker = imageMultiPicker {
         if(it.isEmpty())
-            return@ImageLauncher
+            return@imageMultiPicker
         vm.uriList.clear()
         vm.uriList.addAll(it)
     }

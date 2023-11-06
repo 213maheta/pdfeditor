@@ -16,6 +16,8 @@ import com.itextpdf.kernel.pdf.PdfReader
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.kernel.pdf.ReaderProperties
 import com.itextpdf.kernel.pdf.WriterProperties
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas
+import com.itextpdf.kernel.pdf.extgstate.PdfExtGState
 import com.itextpdf.kernel.utils.PageRange
 import com.itextpdf.kernel.utils.PdfMerger
 import com.itextpdf.kernel.utils.PdfSplitter
@@ -51,7 +53,6 @@ object PdfUtilities {
         fileList.forEach { pdfData ->
             pdfData.uri?.let { uri ->
                 val inputStream = resolver.openInputStream(uri)
-                Log.e("TAG", "mergePdf: ${pdfData.password}", )
                 val pdfReader = getPdfReader(
                     resolver = resolver,
                     uri = uri,
@@ -65,7 +66,6 @@ object PdfUtilities {
                 pdfReader.close()
                 val progress = donePageNumber * 1f / totalPageNumber
                 onProgress(progress)
-                Log.e("TAG", "mergePdf: $progress")
             }
         }
         try {
@@ -154,7 +154,7 @@ object PdfUtilities {
 
     suspend fun cachedThumbnail(resolver: ContentResolver, uri: Uri): File? =
         withContext(Dispatchers.IO) {
-            Log.e("TAG", "cachedThumbnail: ${uri}", )
+            Log.e("TAG", "cachedThumbnail: ${uri}")
             resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
                 try {
                     val pdfRenderer = PdfRenderer(parcelFileDescriptor).openPage(0)
@@ -263,6 +263,7 @@ object PdfUtilities {
             page.setRotation(value)
             val progress = i * 1f / numberOfPages
             onProgress(progress)
+            page.flush()
         }
         src?.close()
         pdfDoc.close()
@@ -426,6 +427,55 @@ object PdfUtilities {
         }
         pdfDocument.close()
         document.close()
+        return@withContext true
+    }
+
+    suspend fun addWaterMark(
+        resolver: ContentResolver,
+        uri: Uri,
+        password: String?,
+        imageUri:Uri,
+        onProgress: (Float) -> Unit,
+    ): Boolean = withContext(Dispatchers.IO) {
+        val dst = FileManager.createPdfFile()
+        val pdfWriter = PdfWriter(dst)
+        val pdfReader = getPdfReader(
+            resolver = resolver,
+            uri = uri,
+            password
+        )
+        val pdfDoc = PdfDocument(pdfReader, pdfWriter)
+        val doc = Document(pdfDoc)
+
+        val imgStream = resolver.openInputStream(imageUri)
+        val imageByteArray = imgStream?.readBytes()
+        val imageData = ImageDataFactory.create(imageByteArray)
+
+        Log.e("TAG", "addWaterMark123: ${imageByteArray?.size}", )
+        val w = imageData.width
+        val h = imageData.height
+
+        val gs1 = PdfExtGState().setFillOpacity(0.3f)
+
+        for (i in 1..pdfDoc.numberOfPages) {
+            val pdfPage = pdfDoc.getPage(i)
+            val pageSize = pdfPage.pageSizeWithRotation
+
+            pdfPage.isIgnorePageRotationForContent = true
+            val x = (pageSize.getLeft() + pageSize.getRight()) / 2
+            val y = (pageSize.getTop() + pageSize.getBottom()) / 2
+            val over = PdfCanvas(pdfDoc.getPage(i))
+            over.saveState()
+            over.setExtGState(gs1)
+            over.addImage(imageData,x - w / 2, y - h / 2, true)
+            over.restoreState()
+            pdfPage.flush()
+            val progress = i * 1f / pdfDoc.numberOfPages
+            onProgress(progress)
+        }
+        doc.close()
+        pdfDoc.close()
+        imgStream?.close()
         return@withContext true
     }
 }

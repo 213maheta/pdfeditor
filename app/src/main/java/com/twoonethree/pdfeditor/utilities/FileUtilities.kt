@@ -91,7 +91,7 @@ object FileUtilities {
                                 name = name,
                                 size = size,
                                 uri = file.toUri(),
-                                totalPageNumber = 123,
+                                totalPageNumber = -2,
                                 date = dateTime
                             )
                             pdfList.add(pdfData)

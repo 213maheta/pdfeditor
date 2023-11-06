@@ -29,7 +29,7 @@ fun UnlockPdfScreen(navController: NavController)
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
 
-    val pickPdfDocument = pdfLauncherOpenDocument { pdf ->
+    val pickPdfDocument = pdfPickerOpenDocument { pdf ->
         vm.selectedPdf.value = pdf
         vm.checkPassword(contentResolver)
         true

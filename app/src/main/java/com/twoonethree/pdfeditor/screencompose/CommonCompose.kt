@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -28,7 +27,6 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -40,13 +38,11 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -60,13 +56,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
 import com.twoonethree.pdfeditor.model.PdfData
-import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.ui.theme.Orange
 import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
-import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +73,6 @@ fun MyTopAppBar(
     floatBtnClick: () -> Unit,
     innerContent: @Composable (paddingvalues: PaddingValues) -> Unit
 ) {
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -86,6 +81,7 @@ fun MyTopAppBar(
                         text = stringResource(titleId),
                         color = Color.White,
                         fontSize = 18.sp,
+                        textAlign = TextAlign.Center,
                         fontWeight = FontWeight.SemiBold
                     )
                 },
@@ -137,17 +133,18 @@ fun MyTopAppBar(
 }
 
 @Composable
-fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
+fun ItemPDF(pdfData: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
     val resolver = LocalContext.current.contentResolver
+    val vmCommon = viewModel<CommonComposeViewModel>()
     val vmDialog = viewModel<DialogViewModel>()
 
-    val imageBitmap = remember<MutableState<ImageBitmap?>> {
-        mutableStateOf(ImageBitmap(1, 1))
+    val thumbnailPath = remember {
+        mutableStateOf<File?>(null)
     }
 
-    LaunchedEffect(key1 = Unit) {
-        pdf.uri?.let {
-            imageBitmap.value = PdfUtilities.getPdfThumbnail(resolver, it)
+    LaunchedEffect(key1 = pdfData) {
+        pdfData.uri?.let {
+            thumbnailPath.value = vmCommon.getThumbNail(resolver, it)
         }
     }
 
@@ -167,9 +164,9 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
                 shape = RoundedCornerShape(4.dp),
             )
     ) {
-        imageBitmap.value?.let {
-            Image(
-                bitmap = it,
+        thumbnailPath.value?.let {
+            AsyncImage(
+                model = it,
                 contentDescription = "",
                 modifier = Modifier
                     .weight(0.1f)
@@ -194,13 +191,12 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
                     )
             )
             {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_default_pdf),
+                AsyncImage(
+                    model  = R.drawable.ic_default_pdf,
                     contentDescription = "",
                     modifier = Modifier
                         .align(Alignment.Center)
                 )
-
             }
         }
         Column(
@@ -208,7 +204,7 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
                 .weight(0.8f)
         ) {
             Text(
-                text = pdf.name,
+                text = pdfData.name,
                 color = Color.Black,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 14.sp,
@@ -229,7 +225,7 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
                         .padding(start = 20.dp)
                 )
                 Text(
-                    text = pdf.size,
+                    text = pdfData.size,
                     color = Color.Black,
                     fontWeight = FontWeight.Medium,
                     fontSize = 10.sp,
@@ -237,7 +233,7 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
                         .padding(start = 20.dp)
                 )
                 Text(
-                    text = pdf.date ?: "",
+                    text = pdfData.date ?: "",
                     color = Color.Black,
                     fontWeight = FontWeight.Medium,
                     fontSize = 10.sp,
@@ -245,7 +241,7 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
                         .padding(start = 20.dp)
                 )
                 Text(
-                    text = pdf.totalPageNumber.toString(),
+                    text = pdfData.totalPageNumber.toString(),
                     color = Color.Black,
                     fontWeight = FontWeight.Medium,
                     fontSize = 10.sp,
@@ -254,14 +250,14 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
                 )
             }
         }
-        if (pdf.totalPageNumber == 0) {
+        if (pdfData.totalPageNumber == 0) {
             Icon(
                 imageVector = Icons.Default.Lock,
                 contentDescription = stringResource(R.string.lock),
                 modifier = Modifier
                     .weight(0.1f)
                     .clickable {
-                        vmDialog.selectedPdf.value = pdf
+                        vmDialog.selectedPdf.value = pdfData
                         vmDialog.isPasswordDialogueVisible.value = true
                         vmDialog.selectedIndex = index
                     }
@@ -274,7 +270,7 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
             modifier = Modifier
                 .weight(0.1f)
                 .clickable {
-                    removePdf(pdf)
+                    removePdf(pdfData)
                 }
         )
     }

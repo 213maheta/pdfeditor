@@ -1,11 +1,10 @@
 package com.twoonethree.pdfeditor.viewmodel
 
 import android.content.ContentResolver
-import androidx.compose.runtime.mutableStateListOf
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.twoonethree.pdfeditor.events.AddPageNumberSelection
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
@@ -16,17 +15,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-class AddPageNumberViewModel:ViewModel() {
+class AddWaterMarkViewModel:ViewModel() {
 
-    val splitPointList = mutableStateListOf<Int>()
     var selectedPdf = mutableStateOf(PdfData("", "" , null,  0))
-    var totalPageNumber = 0
 
     val showProgressBar = mutableStateOf(false)
     val showProgressValue = mutableStateOf(0f)
 
-
-    val selectedCorner = mutableStateOf<AddPageNumberSelection>(AddPageNumberSelection.BOTTOM_RIGHT)
+    val waterMarkUri = mutableStateOf<Uri?>(null)
 
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
 
@@ -39,7 +35,7 @@ class AddPageNumberViewModel:ViewModel() {
         selectedPdf.value = PdfData("", "" , null,0)
     }
 
-    fun addPageNumber(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
+    fun addWaterMark(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.IO)
     {
         selectedPdf.value.uri?.let {
             if(selectedPdf.value.totalPageNumber == 0)
@@ -47,29 +43,30 @@ class AddPageNumberViewModel:ViewModel() {
                 setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
                 return@launch
             }
-            showProgressBar.value = true
-            val isSuccess = PdfUtilities.addPageNumber(resolver, it, selectedPdf.value.password,::getXYposition)
-            { progress: Float -> showProgressValue.value = progress }
-            when(isSuccess)
+
+            if(waterMarkUri.value == null)
             {
-                true -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Page number added successfully", Green))
-                false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
+                setUiIntent(ScreenCommonEvents.ShowSnackBar("Select Watermark", Blue))
+                return@launch
             }
+            showProgressBar.value = true
+            val isSuccess = PdfUtilities.addWaterMark(
+                resolver = resolver,
+                uri = selectedPdf.value.uri!!,
+                password = selectedPdf.value.password,
+                imageUri = waterMarkUri.value!!
+            ){ progress: Float -> showProgressValue.value = progress }
+
             showProgressBar.value = false
             showProgressValue.value = 0f
+
+            when(isSuccess)
+            {
+                true -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Watermark added successfully", Green))
+                false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
+            }
         }?: kotlin.run {
             setUiIntent(ScreenCommonEvents.ShowSnackBar("Select file first", Blue))
-        }
-    }
-
-    fun getXYposition(x:Float, y:Float): Pair<Float, Float> {
-        when(selectedCorner.value)
-        {
-            is AddPageNumberSelection.TOP_LEFT -> return Pair(40f,y-30f)
-            is AddPageNumberSelection.TOP_RIGHT -> return Pair(x-40,y-30f)
-            is AddPageNumberSelection.BOTTOM_LEFT -> return Pair(40f,30f)
-            is AddPageNumberSelection.BOTTOM_RIGHT -> return Pair(x-40,30f)
-            is AddPageNumberSelection.EMPTY -> return Pair(x,y)
         }
     }
 }

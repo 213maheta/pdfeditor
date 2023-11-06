@@ -54,7 +54,7 @@ fun SplitPDFScreen(navController: NavHostController) {
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
 
-    val pickPdfDocument = pdfLauncher { pdf ->
+    val pickPdfDocument = pdfPicker { pdf ->
         vm.selectedPdf.value = pdf
         vm.splitPointList.clear()
         true

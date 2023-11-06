@@ -61,7 +61,7 @@ fun MergePDFScreen(navController: NavHostController) {
         }
     }
 
-    val pickPdfDocument = pdfLauncherMulti {pdfList: List<PdfData> -> vm.pdfList.addAll(pdfList) }
+    val pickPdfDocument = pdfPickerMulti { pdfList: List<PdfData> -> vm.pdfList.addAll(pdfList) }
 
     val innerContent: @Composable (paddingvalues:PaddingValues) -> Unit = { paddingvalues:PaddingValues->
         Box(
@@ -101,7 +101,7 @@ fun ReOrderColumnList(
 
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
         itemsIndexed(pdfList) { index, pdf ->
-            ItemPDF(pdf = pdf, vm::removePdf, index)
+            ItemPDF(pdfData = pdf, vm::removePdf, index)
         }
     }
 }

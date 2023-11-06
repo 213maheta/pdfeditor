@@ -15,4 +15,5 @@ sealed class Destination(val node: String) {
     data object UnlockPasswordScreen : Destination(node = ScreenName.UNLOCK_PASSWORD_SCREEN)
     data object OrganizePdfScreen : Destination(node = ScreenName.ORGANIZE_PDF_SCREEN)
     data object ImageToPdfScreen : Destination(node = ScreenName.IMAGE_TO_PDF_SCREEN)
+    data object AddWaterMarkScreen : Destination(node = ScreenName.ADD_WATERMARK_SCREEN)
 }

@@ -47,7 +47,7 @@ fun AddPageNumberScreen(navController: NavController)
     val onCornerClick = {value:AddPageNumberSelection -> vm.selectedCorner.value = value}
     val isSelected :(AddPageNumberSelection) -> Boolean= {value:AddPageNumberSelection -> vm.selectedCorner.value == value}
 
-    val pickPdfDocument = pdfLauncherOpenDocument { pdf ->
+    val pickPdfDocument = pdfPickerOpenDocument { pdf ->
         vm.selectedPdf.value = pdf
         vm.totalPageNumber = pdf.totalPageNumber
         vm.splitPointList.clear()

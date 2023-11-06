@@ -149,6 +149,12 @@ fun PdfFunctionsList(navController: NavHostController) {
         }
         item {
             PDFoptionCard(
+                "Add Watermark",
+                R.drawable.ic_rotate_pdf,
+                { navController.navigate(ScreenName.ADD_WATERMARK_SCREEN) })
+        }
+        item {
+            PDFoptionCard(
                 "Add Page Number",
                 R.drawable.ic_addpagenumber_pdf,
                 { navController.navigate(ScreenName.ADD_PAGE_NUMBER_SCREEN) })

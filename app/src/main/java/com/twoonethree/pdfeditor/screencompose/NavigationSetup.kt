@@ -61,6 +61,9 @@ fun Navingation() {
         composable(Destination.ImageToPdfScreen.node) {
             ImageToPdfScreen(navController)
         }
+        composable(Destination.AddWaterMarkScreen.node) {
+            AddWaterMarkScreen(navController)
+        }
     }
 }
 

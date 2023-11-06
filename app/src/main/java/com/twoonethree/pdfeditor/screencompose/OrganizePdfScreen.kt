@@ -57,7 +57,7 @@ fun OrganizePdfScreen(navController: NavController)
     val onDelete = vm::removePage
     val changeOrder = vm::changePosition
 
-    val pickPdfDocument = pdfLauncherOpenDocument { pdf ->
+    val pickPdfDocument = pdfPickerOpenDocument { pdf ->
         vm.selectedPdf.value = pdf
         vm.setPageNumberList()
         true

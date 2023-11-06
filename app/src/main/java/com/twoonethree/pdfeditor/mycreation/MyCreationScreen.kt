@@ -168,7 +168,7 @@ fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit, onMenuClick: (PdfDa
             )
             {
                 AsyncImage(
-                    model  = R.drawable.ic_splash_icon,
+                    model  = R.drawable.ic_default_pdf,
                     contentDescription = "",
                     modifier = Modifier
                         .align(Alignment.Center)

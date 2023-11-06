@@ -13,7 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun pdfLauncher(onSuccess: (PdfData) -> Boolean): ManagedActivityResultLauncher<String, Uri?> {
+fun pdfPicker(onSuccess: (PdfData) -> Boolean): ManagedActivityResultLauncher<String, Uri?> {
     val contentResolver = LocalContext.current.contentResolver
     val scope = rememberCoroutineScope()
     return rememberLauncherForActivityResult(
@@ -30,7 +30,7 @@ fun pdfLauncher(onSuccess: (PdfData) -> Boolean): ManagedActivityResultLauncher<
 }
 
 @Composable
-fun pdfLauncherOpenDocument(onSuccess: (PdfData) -> Boolean): ManagedActivityResultLauncher<Array<String>, Uri?> {
+fun pdfPickerOpenDocument(onSuccess: (PdfData) -> Boolean): ManagedActivityResultLauncher<Array<String>, Uri?> {
     val contentResolver = LocalContext.current.contentResolver
     val scope = rememberCoroutineScope()
     return rememberLauncherForActivityResult(
@@ -47,7 +47,7 @@ fun pdfLauncherOpenDocument(onSuccess: (PdfData) -> Boolean): ManagedActivityRes
 }
 
 @Composable
-fun pdfLauncherMulti(onSuccess: (List<PdfData>) -> Boolean): ManagedActivityResultLauncher<String, List<@JvmSuppressWildcards Uri>> {
+fun pdfPickerMulti(onSuccess: (List<PdfData>) -> Boolean): ManagedActivityResultLauncher<String, List<@JvmSuppressWildcards Uri>> {
     val contentResolver = LocalContext.current.contentResolver
     val scope = rememberCoroutineScope()
 
@@ -70,11 +70,23 @@ fun pdfLauncherMulti(onSuccess: (List<PdfData>) -> Boolean): ManagedActivityResu
 
 
 @Composable
-fun ImageLauncher(onSuccess: (List<Uri>) -> Unit): ManagedActivityResultLauncher<String, List<@JvmSuppressWildcards Uri>> {
+fun imageMultiPicker(onSuccess: (List<Uri>) -> Unit): ManagedActivityResultLauncher<String, List<@JvmSuppressWildcards Uri>> {
     return rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
         onResult = {
             onSuccess(it)
+        }
+    )
+}
+
+@Composable
+fun imagePicker(onSuccess: (Uri) -> Unit): ManagedActivityResultLauncher<String, Uri?> {
+    return rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = {
+            it?.let {
+                onSuccess(it)
+            }
         }
     )
 }

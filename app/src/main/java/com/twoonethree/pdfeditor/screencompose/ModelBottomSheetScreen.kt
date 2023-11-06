@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.dialog.DeleteDialogScreen
 import com.twoonethree.pdfeditor.model.PdfData
@@ -53,6 +54,7 @@ import com.twoonethree.pdfeditor.mycreation.MyCreationViewModel
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
 import com.twoonethree.pdfeditor.dialog.RenameDialogScreen
+import java.io.File
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -146,15 +148,14 @@ fun IconRow(icon: ImageVector, nameId: Int, function: () -> Unit)
 @Composable
 fun ItemPdf(pdfData: PdfData) {
     val resolver = LocalContext.current.contentResolver
-
-    val imageBitmap = remember<MutableState<ImageBitmap?>> {
-        mutableStateOf(ImageBitmap(1, 1))
+    val vm = viewModel<MyCreationViewModel>()
+    val thumbnailPath = remember {
+        mutableStateOf<File?>(null)
     }
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = pdfData) {
         pdfData.uri?.let {
-            Log.e("TAG", "ItemPdf: ${pdfData.uri}", )
-            imageBitmap.value = PdfUtilities.getPdfThumbnail(resolver, it)
+            thumbnailPath.value = vm.getThumbNail(resolver, it)
         }
     }
 
@@ -163,9 +164,9 @@ fun ItemPdf(pdfData: PdfData) {
             .padding(10.dp)
             .fillMaxWidth()
     ) {
-        imageBitmap.value?.let {
-            Image(
-                bitmap = it,
+        thumbnailPath.value?.let {
+            AsyncImage(
+                model = it,
                 contentDescription = "",
                 modifier = Modifier
                     .weight(0.1f)
@@ -190,8 +191,8 @@ fun ItemPdf(pdfData: PdfData) {
                     )
             )
             {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_splash_icon),
+                AsyncImage(
+                    model  = R.drawable.ic_default_pdf,
                     contentDescription = "",
                     modifier = Modifier
                         .align(Alignment.Center)
