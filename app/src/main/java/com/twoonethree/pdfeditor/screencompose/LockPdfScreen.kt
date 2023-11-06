@@ -24,6 +24,8 @@ fun LockPdfScreen(navController: NavController)
 {
     val vm = viewModel<LockPdfViewModel>()
     val vmCommon = viewModel<CommonComposeViewModel>()
+    val vmDialog = viewModel<DialogViewModel>()
+
 
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
@@ -42,14 +44,14 @@ fun LockPdfScreen(navController: NavController)
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.ShowPasswordDialog -> {
-                    DialogViewModel.selectedPdf.value = vm.selectedPdf.value
-                    DialogViewModel.isPasswordDialogueVisible.value = true
+                    vmDialog.selectedPdf.value = vm.selectedPdf.value
+                    vmDialog.isPasswordDialogueVisible.value = true
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.GotPassword -> {
                     vm.selectedPdf.value.totalPageNumber = it.totalPageNumber
                     vm.selectedPdf.value.password = it.password
-                    DialogViewModel.isPasswordDialogueVisible.value = false
+                    vmDialog.isPasswordDialogueVisible.value = false
                 }
                 else -> {}
             }
@@ -83,7 +85,7 @@ fun LockPdfScreen(navController: NavController)
     )
 
     when{
-        DialogViewModel.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+        vmDialog.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
     }
 
     AnimatedVisibility(visible = vm.showProgressBar.value) {

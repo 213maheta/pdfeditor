@@ -16,26 +16,22 @@ import kotlinx.coroutines.launch
 
 class DialogViewModel : ViewModel() {
 
-    //Password Dialogue
-    companion object {
-        var selectedPdf = mutableStateOf(PdfData("", "", null, 0))
-        val isPasswordDialogueVisible = mutableStateOf(false)
-        var selectedIndex = -1
-        val isDeleteDialogVisible = mutableStateOf(false)
-        val isRenameDialogVisible = mutableStateOf(false)
-    }
-
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
-    val password = mutableStateOf("")
+    var selectedPdf = mutableStateOf(PdfData("", "", null, 0))
 
     fun setUiIntent(value: ScreenCommonEvents) {
         uiIntent.value = value
     }
 
+    //Password Dialogue
+    val isPasswordDialogueVisible = mutableStateOf(false)
+    var selectedIndex = -1
+
+    val password = mutableStateOf("")
+    val errorText = mutableStateOf("")
     fun removeSelectedPdf(value: PdfData) {
         selectedPdf.value = PdfData("", "", null, 0)
     }
-
     fun checkPassword(contentResolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
     {
         selectedPdf.value.uri?.let {
@@ -54,13 +50,17 @@ class DialogViewModel : ViewModel() {
                         )
                     )
                 }
-                value == 0 -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Password is incorrect", Green))
-                value == -1 -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something went wrong", Orange))
+                value == 0 -> errorText.value = "Password is incorrect"
+                value == -1 -> errorText.value = "Something went wrong"
             }
         }
     }
 
+    //Delete Dialogue
+    val isDeleteDialogVisible = mutableStateOf(false)
+
     //Rename Dialogue
+    val isRenameDialogVisible = mutableStateOf(false)
     val newName = mutableStateOf("")
 
 

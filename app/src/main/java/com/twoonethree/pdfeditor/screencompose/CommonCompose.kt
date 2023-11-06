@@ -75,8 +75,6 @@ fun MyTopAppBar(
     floatBtnClick: () -> Unit,
     innerContent: @Composable (paddingvalues: PaddingValues) -> Unit
 ) {
-    val vm = viewModel<CommonComposeViewModel>()
-    val snackBarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         topBar = {
@@ -139,6 +137,7 @@ fun MyTopAppBar(
 @Composable
 fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
     val resolver = LocalContext.current.contentResolver
+    val vmDialog = viewModel<DialogViewModel>()
 
 
     val imageBitmap = remember<MutableState<ImageBitmap?>> {
@@ -261,9 +260,9 @@ fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
                 modifier = Modifier
                     .weight(0.1f)
                     .clickable {
-                        DialogViewModel.selectedPdf.value = pdf
-                        DialogViewModel.isPasswordDialogueVisible.value = true
-                        DialogViewModel.selectedIndex = index
+                        vmDialog.selectedPdf.value = pdf
+                        vmDialog.isPasswordDialogueVisible.value = true
+                        vmDialog.selectedIndex = index
                     }
             )
         }

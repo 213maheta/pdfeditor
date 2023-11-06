@@ -51,6 +51,7 @@ object PdfUtilities {
         fileList.forEach { pdfData ->
             pdfData.uri?.let { uri ->
                 val inputStream = resolver.openInputStream(uri)
+                Log.e("TAG", "mergePdf: ${pdfData.password}", )
                 val pdfReader = getPdfReader(
                     resolver = resolver,
                     uri = uri,

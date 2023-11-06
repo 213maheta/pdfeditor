@@ -30,6 +30,8 @@ fun MergePDFScreen(navController: NavHostController) {
 
     val vm = viewModel<MergePdfViewModel>()
     val vmCommon = viewModel<CommonComposeViewModel>()
+    val vmDialog = viewModel<DialogViewModel>()
+
 
     val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
@@ -43,16 +45,16 @@ fun MergePDFScreen(navController: NavHostController) {
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.ShowPasswordDialog -> {
-                    DialogViewModel.selectedPdf.value = vm.pdfList[vm.lockedIndex]
-                    DialogViewModel.isPasswordDialogueVisible.value = true
-                    DialogViewModel.selectedIndex = vm.lockedIndex
+                    vmDialog.selectedPdf.value = vm.pdfList[vm.lockedIndex]
+                    vmDialog.isPasswordDialogueVisible.value = true
+                    vmDialog.selectedIndex = vm.lockedIndex
                     vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
                 is ScreenCommonEvents.GotPassword -> {
-                    vm.lockedIndex = DialogViewModel.selectedIndex
+                    vm.lockedIndex = vmDialog.selectedIndex
                     vm.pdfList[vm.lockedIndex].totalPageNumber = it.totalPageNumber
                     vm.pdfList[vm.lockedIndex].password = it.password
-                    DialogViewModel.isPasswordDialogueVisible.value = false
+                    vmDialog.isPasswordDialogueVisible.value = false
                 }
                 else -> {}
             }
@@ -81,7 +83,7 @@ fun MergePDFScreen(navController: NavHostController) {
     )
 
     when{
-        DialogViewModel.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
+        vmDialog.isPasswordDialogueVisible.value -> PasswordDialogScreen(vm::setUiIntent)
     }
 
     AnimatedVisibility(visible = vm.showProgressBar.value) {

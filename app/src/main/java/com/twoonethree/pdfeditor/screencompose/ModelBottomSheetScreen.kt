@@ -61,6 +61,8 @@ fun ModelBottomSheetScreen()
 {
     val context = LocalContext.current
     val vm = viewModel<MyCreationViewModel>()
+    val vmDialog = viewModel<DialogViewModel>()
+
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
 
@@ -92,11 +94,9 @@ fun ModelBottomSheetScreen()
                 .background(color = colorResource(id = R.color.black))
             )
 
-            IconRow(Icons.Default.Delete, R.string.delete, { DialogViewModel.isDeleteDialogVisible.value = true})
+            IconRow(Icons.Default.Delete, R.string.delete, { vmDialog.isDeleteDialogVisible.value = true})
             IconRow(Icons.Default.Share, R.string.share, onShareClick)
-            IconRow(Icons.Default.Person, R.string.rename, {
-
-                DialogViewModel.isRenameDialogVisible.value = true})
+            IconRow(Icons.Default.Person, R.string.rename, { vmDialog.isRenameDialogVisible.value = true})
 
             Spacer(modifier = Modifier
                 .fillMaxWidth()
@@ -106,11 +106,11 @@ fun ModelBottomSheetScreen()
     }
 
     when{
-        DialogViewModel.isDeleteDialogVisible.value -> DeleteDialogScreen(vm::delete)
+        vmDialog.isDeleteDialogVisible.value -> DeleteDialogScreen(vm::delete)
     }
 
     when{
-        DialogViewModel.isRenameDialogVisible.value -> RenameDialogScreen(vm.selectedPdf.value.name, vm::rename)
+        vmDialog.isRenameDialogVisible.value -> RenameDialogScreen(vm.selectedPdf.value.name, vm::rename)
     }
 }
 

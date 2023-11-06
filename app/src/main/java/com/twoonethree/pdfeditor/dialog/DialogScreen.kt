@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -42,7 +45,7 @@ fun PasswordDialogScreen(callback: (ScreenCommonEvents) -> Unit) {
     val vm = viewModel<DialogViewModel>()
     val vmCommon = viewModel<CommonComposeViewModel>()
     val contentResolver = LocalContext.current.contentResolver
-    val pdfData = DialogViewModel.selectedPdf.value
+    val pdfData = vm.selectedPdf.value
 
 
     LaunchedEffect(key1 = Unit) {
@@ -55,8 +58,12 @@ fun PasswordDialogScreen(callback: (ScreenCommonEvents) -> Unit) {
                 }
 
                 is ScreenCommonEvents.GotPassword -> {
-                    DialogViewModel.selectedPdf.value.totalPageNumber = it.totalPageNumber
-                    DialogViewModel.isPasswordDialogueVisible.value = false
+                    vm.selectedPdf.value.totalPageNumber = it.totalPageNumber
+                    vm.isPasswordDialogueVisible.value = false
+                    callback(ScreenCommonEvents.GotPassword(
+                        totalPageNumber = it.totalPageNumber,
+                        password = it.password
+                    ))
                 }
 
                 else -> {}
@@ -77,55 +84,70 @@ fun PasswordDialogScreen(callback: (ScreenCommonEvents) -> Unit) {
                 text = pdfData.name,
                 color = Color.Black,
                 fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
                 fontSize = 18.sp,
                 modifier = Modifier
-                    .padding(start = 10.dp, top = 10.dp)
+                    .fillMaxWidth()
             )
             Text(
                 text = "This file is protected",
-                color = Color.Black,
+                color = Orange,
                 fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
                 fontSize = 14.sp,
                 modifier = Modifier
-                    .padding(start = 10.dp, top = 10.dp)
+                    .fillMaxWidth()
             )
             PasswordTextEdit(vm.password.value) { value: String ->
                 vm.password.value = value
             }
 
             Row(
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(end = 5.dp, top = 20.dp, bottom = 30.dp)
+                    .padding(end = 5.dp, top = 20.dp, bottom = 20.dp)
             ) {
-                Text(
-                    text = "OK",
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .padding(end = 40.dp)
-                        .clickable {
-                            vm.checkPassword(contentResolver = contentResolver)
-                        }
+
+                ButtonWithIcon(
+                    value = "Cancel",
+                    onClick = { vm.isPasswordDialogueVisible.value = false },
+                    backgroundColor = Color.White,
+                    textColor = Orange,
+                    iconTint = Color.Black,
+                    iconId = Icons.Default.Clear
                 )
+
+                ButtonWithIcon(
+                    value = "Okay",
+                    onClick = { vm.checkPassword(contentResolver = contentResolver) },
+                    backgroundColor = Orange,
+                    textColor = Color.White,
+                    iconTint = Color.White,
+                    iconId = Icons.Default.Check
+                )
+            }
+
+            Row{
                 Text(
-                    text = "Cancel",
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold,
+                    text = vm.errorText.value,
+                    color = Orange,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp,
                     modifier = Modifier
-                        .padding(end = 10.dp)
-                        .clickable {
-                            DialogViewModel.isPasswordDialogueVisible.value = false
-                        }
+                        .fillMaxWidth()
+                        .padding(vertical = 5.dp)
                 )
             }
         }
     }
 }
 
+
 @Composable
 fun DeleteDialogScreen(callback: () -> Unit) {
+    val vm = viewModel<DialogViewModel>()
 
     Dialog(onDismissRequest = { }) {
         Card(
@@ -158,7 +180,7 @@ fun DeleteDialogScreen(callback: () -> Unit) {
 
                 ButtonWithIcon(
                     value = "Cancel",
-                    onClick = { DialogViewModel.isDeleteDialogVisible.value = false },
+                    onClick = { vm.isDeleteDialogVisible.value = false },
                     backgroundColor = Color.White,
                     textColor = Orange,
                     iconTint = Color.Black,
@@ -169,7 +191,7 @@ fun DeleteDialogScreen(callback: () -> Unit) {
                     value = "Delete",
                     onClick = {
                         callback()
-                        DialogViewModel.isDeleteDialogVisible.value = false
+                        vm.isDeleteDialogVisible.value = false
                     },
                     backgroundColor = Orange,
                     textColor = Color.White,
@@ -222,7 +244,7 @@ fun RenameDialogScreen(filename: String, callback: (String) -> Job) {
 
                 ButtonWithIcon(
                     value = "Cancel",
-                    onClick = { DialogViewModel.isRenameDialogVisible.value = false },
+                    onClick = { vm.isRenameDialogVisible.value = false },
                     backgroundColor = Color.White,
                     textColor = Orange,
                     iconTint = Color.Black,
@@ -233,34 +255,14 @@ fun RenameDialogScreen(filename: String, callback: (String) -> Job) {
                     value = "Rename",
                     onClick = {
                         callback(StringUtilities.addExtention(vm.newName.value))
-                        DialogViewModel.isRenameDialogVisible.value = false
+                        vm.isRenameDialogVisible.value = false
                     },
                     backgroundColor = Orange,
                     textColor = Color.White,
                     iconTint = Color.White,
-                    iconId = Icons.Default.Delete
+                    iconId = Icons.Default.Create
                 )
             }
-        }
-    }
-}
-
-
-@Composable
-fun SuccessDialog()
-{
-    val vm = viewModel<DialogViewModel>()
-
-    Dialog(onDismissRequest = { }) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp),
-            shape = RoundedCornerShape(5.dp),
-        )
-        {
-
-
         }
     }
 }
