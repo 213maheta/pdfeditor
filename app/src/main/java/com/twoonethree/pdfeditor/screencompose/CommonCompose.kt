@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -53,6 +54,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -138,7 +140,6 @@ fun MyTopAppBar(
 fun ItemPDF(pdf: PdfData, removePdf: (PdfData) -> Unit, index: Int = 0) {
     val resolver = LocalContext.current.contentResolver
     val vmDialog = viewModel<DialogViewModel>()
-
 
     val imageBitmap = remember<MutableState<ImageBitmap?>> {
         mutableStateOf(ImageBitmap(1, 1))
@@ -291,6 +292,7 @@ fun PasswordTextEdit(value: String, onValueChange: (String) -> Unit) {
             focusedIndicatorColor = colorResource(id = R.color.orange),
             unfocusedIndicatorColor = colorResource(id = R.color.orange),
         ),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)

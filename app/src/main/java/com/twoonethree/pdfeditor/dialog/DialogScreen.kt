@@ -1,19 +1,17 @@
 package com.twoonethree.pdfeditor.dialog
 
-import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -25,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,6 +63,7 @@ fun PasswordDialogScreen(callback: (ScreenCommonEvents) -> Unit) {
                         totalPageNumber = it.totalPageNumber,
                         password = it.password
                     ))
+                    vm.setUiIntent(ScreenCommonEvents.EMPTY)
                 }
 
                 else -> {}
@@ -71,7 +71,10 @@ fun PasswordDialogScreen(callback: (ScreenCommonEvents) -> Unit) {
         }
     }
 
-    Dialog(onDismissRequest = { }) {
+    Dialog(onDismissRequest = {
+        vm.errorText.value = ""
+        vm.password.value = ""
+    }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -128,18 +131,16 @@ fun PasswordDialogScreen(callback: (ScreenCommonEvents) -> Unit) {
                 )
             }
 
-            Row{
-                Text(
-                    text = vm.errorText.value,
-                    color = Orange,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 5.dp)
-                )
-            }
+            Text(
+                text = vm.errorText.value,
+                color = Orange,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
+            )
         }
     }
 }
@@ -205,7 +206,7 @@ fun DeleteDialogScreen(callback: () -> Unit) {
 
 
 @Composable
-fun RenameDialogScreen(filename: String, callback: (String) -> Job) {
+fun RenameDialogScreen(filename: String, callback: (String) -> Job, validateSameName: (String) -> Boolean) {
 
     val vm = viewModel<DialogViewModel>()
     LaunchedEffect(key1 = Unit)
@@ -213,7 +214,9 @@ fun RenameDialogScreen(filename: String, callback: (String) -> Job) {
         vm.newName.value = StringUtilities.removeExtention(filename)
     }
 
-    Dialog(onDismissRequest = { }) {
+    Dialog(onDismissRequest = {
+        vm.warningText.value = ""
+    }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -254,6 +257,10 @@ fun RenameDialogScreen(filename: String, callback: (String) -> Job) {
                 ButtonWithIcon(
                     value = "Rename",
                     onClick = {
+                        if(!vm.validateRename())
+                            return@ButtonWithIcon
+                        if(!validateSameName(vm.newName.value))
+                            return@ButtonWithIcon
                         callback(StringUtilities.addExtention(vm.newName.value))
                         vm.isRenameDialogVisible.value = false
                     },
@@ -263,6 +270,17 @@ fun RenameDialogScreen(filename: String, callback: (String) -> Job) {
                     iconId = Icons.Default.Create
                 )
             }
+
+            Text(
+                text = vm.warningText.value,
+                color = Orange,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp)
+            )
         }
     }
 }
@@ -280,6 +298,7 @@ fun MyTextEdit() {
             focusedIndicatorColor = colorResource(id = R.color.orange),
             unfocusedIndicatorColor = colorResource(id = R.color.orange),
         ),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)

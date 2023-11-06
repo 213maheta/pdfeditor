@@ -110,7 +110,7 @@ fun ModelBottomSheetScreen()
     }
 
     when{
-        vmDialog.isRenameDialogVisible.value -> RenameDialogScreen(vm.selectedPdf.value.name, vm::rename)
+        vmDialog.isRenameDialogVisible.value -> RenameDialogScreen(vm.selectedPdf.value.name, vm::rename, vm::validateSameName)
     }
 }
 

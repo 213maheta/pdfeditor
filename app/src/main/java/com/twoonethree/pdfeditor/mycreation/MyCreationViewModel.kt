@@ -51,19 +51,6 @@ class MyCreationViewModel:ViewModel() {
     {
         if(selectedPdf.value.uri == null)
             return@launch
-        if(StringUtilities.removeExtention(newName).isEmpty())
-        {
-            setUiIntent(ScreenCommonEvents.ShowSnackBar("Give proper name", Blue))
-            return@launch
-        }
-        val sameNamePdf = pdfList.firstOrNull {
-            it.name == newName
-        }
-        if(sameNamePdf != null)
-        {
-            setUiIntent(ScreenCommonEvents.ShowSnackBar("This name already taken", Blue))
-            return@launch
-        }
         val isSuccess = FileManager.renameFile(selectedPdf.value.uri!!, newName)
         when(isSuccess)
         {
@@ -81,6 +68,13 @@ class MyCreationViewModel:ViewModel() {
             }
             false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
         }
+    }
+
+    fun validateSameName(newName:String): Boolean {
+        val sameNamePdf = pdfList.firstOrNull {
+            it.name == newName
+        }
+        return sameNamePdf == null
     }
 
     fun delete()

@@ -62,6 +62,25 @@ class DialogViewModel : ViewModel() {
     //Rename Dialogue
     val isRenameDialogVisible = mutableStateOf(false)
     val newName = mutableStateOf("")
+    val warningText = mutableStateOf("")
+    val notAllowedCharacterList = listOf("/", "?", "%", "'\'", ".", " ", )
+    fun validateRename(): Boolean {
+        if(newName.value.isEmpty())
+        {
+            warningText.value = "Empty field not allowed"
+            return false
+        }
+
+        notAllowedCharacterList.forEach{
+            if(newName.value.contains(it))
+            {
+                warningText.value = "Only alphabet, number and underscore allowed"
+                return false
+            }
+        }
+        return true
+    }
+
 
 
 }
