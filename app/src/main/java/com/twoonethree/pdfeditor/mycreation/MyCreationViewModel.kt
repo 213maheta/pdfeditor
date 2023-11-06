@@ -17,6 +17,7 @@ import com.twoonethree.pdfeditor.ui.theme.Orange
 import com.twoonethree.pdfeditor.utilities.CachedManager
 import com.twoonethree.pdfeditor.utilities.FileManager
 import com.twoonethree.pdfeditor.utilities.FileUtilities
+import com.twoonethree.pdfeditor.utilities.StringUtilities
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -50,7 +51,7 @@ class MyCreationViewModel:ViewModel() {
     {
         if(selectedPdf.value.uri == null)
             return@launch
-        if(newName.replace(".pdf", "").isEmpty())
+        if(StringUtilities.removeExtention(newName).isEmpty())
         {
             setUiIntent(ScreenCommonEvents.ShowSnackBar("Give proper name", Blue))
             return@launch

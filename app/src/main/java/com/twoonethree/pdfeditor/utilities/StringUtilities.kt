@@ -16,12 +16,20 @@ object ScreenName {
 }
 
 object StringUtilities {
-
     fun removeSlash(value:String): String {
         return value.replace("/", "`")
     }
-
     fun addSlash(value:String): String {
         return value.replace("`", "/")
     }
+    fun removeExtention(value:String): String {
+        return if(value.isNotEmpty()) value.substring(0, value.length - 4) else ""
+    }
+
+    fun addExtention(value:String): String
+    {
+        return "$value.pdf"
+    }
 }
+
+

@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -61,7 +62,9 @@ import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
+import com.twoonethree.pdfeditor.ui.theme.Orange
 import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,24 +114,22 @@ fun MyTopAppBar(
                         tint = Color.White,
                     )
                 },
-
                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = colorResource(id = R.color.orange_light))
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    floatBtnClick()
-                },
-                shape = CircleShape,
-                containerColor = colorResource(id = R.color.orange_light)
-            ) {
-                Icon(
+            ExtendedFloatingActionButton(
+                text = { Text("Pick PDF", color = Color.White) },
+                icon = { Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Back",
                     tint = Color.White
-                )
-            }
+                ) },
+                onClick = {
+                    floatBtnClick()
+                },
+                containerColor = Orange
+            )
         },
     ) { contentPadding ->
         innerContent(contentPadding)

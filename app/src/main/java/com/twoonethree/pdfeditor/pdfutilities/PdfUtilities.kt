@@ -307,7 +307,6 @@ object PdfUtilities {
             uri = uri,
             prePassword
         )
-
         val pdfDoc = PdfDocument(
             pdfReader,
             PdfWriter(dst.outputStream(), props)

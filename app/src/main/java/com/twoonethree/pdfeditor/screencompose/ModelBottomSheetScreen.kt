@@ -95,6 +95,7 @@ fun ModelBottomSheetScreen()
             IconRow(Icons.Default.Delete, R.string.delete, { DialogViewModel.isDeleteDialogVisible.value = true})
             IconRow(Icons.Default.Share, R.string.share, onShareClick)
             IconRow(Icons.Default.Person, R.string.rename, {
+
                 DialogViewModel.isRenameDialogVisible.value = true})
 
             Spacer(modifier = Modifier
@@ -109,7 +110,7 @@ fun ModelBottomSheetScreen()
     }
 
     when{
-        DialogViewModel.isRenameDialogVisible.value -> RenameDialogScreen(vm::rename)
+        DialogViewModel.isRenameDialogVisible.value -> RenameDialogScreen(vm.selectedPdf.value.name, vm::rename)
     }
 }
 

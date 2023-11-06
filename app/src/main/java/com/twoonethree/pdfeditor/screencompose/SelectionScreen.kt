@@ -15,9 +15,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,58 +37,88 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.twoonethree.pdfeditor.R
+import com.twoonethree.pdfeditor.drawer.NavigationDrawer
 import com.twoonethree.pdfeditor.mycreation.MyCreationScreen
 import com.twoonethree.pdfeditor.utilities.ScreenName
+import kotlinx.coroutines.launch
 
 @Composable
 fun SelectionScreen(navController: NavHostController) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.075f)
-                .background(color = colorResource(id = R.color.orange_light)),
-        )
-        {
-            Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = "Menu",
-                modifier = Modifier
-                    .padding(start = 15.dp)
-                    .align(Alignment.CenterStart),
-                tint = Color.White
-            )
-            Text(
-                text = stringResource(id = R.string.pdf_tools),
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                fontFamily = FontFamily.SansSerif,
-                color = Color.White,
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .align(Alignment.Center),
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.175f)
-                .background(color = Color.White)
-        )
-        {
-            PdfFunctionsList(navController)
-        }
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .weight(0.75f))
-        {
-            MyCreationScreen(navController = navController)
-        }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                NavigationDrawer(this)
+            }
+        },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.075f)
+                    .background(color = colorResource(id = R.color.orange_light)),
+            )
+            {
+
+                IconButton(
+                    onClick = {
+                        scope.launch {
+                            drawerState.apply {
+                                if (isClosed) open() else close()
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(start = 15.dp)
+                        .align(Alignment.CenterStart),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Menu",
+
+                        tint = Color.White
+                    )
+                }
+
+
+                Text(
+                    text = stringResource(id = R.string.pdf_tools),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    fontFamily = FontFamily.SansSerif,
+                    color = Color.White,
+                    modifier = Modifier
+                        .padding(start = 10.dp)
+                        .align(Alignment.Center),
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.175f)
+                    .background(color = Color.White)
+            )
+            {
+                PdfFunctionsList(navController)
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.75f)
+            )
+            {
+                MyCreationScreen(navController = navController)
+            }
+        }
     }
+
 }
 
 @Composable
@@ -93,10 +129,16 @@ fun PdfFunctionsList(navController: NavHostController) {
         modifier = Modifier.fillMaxSize(),
     ) {
         item {
-            PDFoptionCard("Merge PDF", R.drawable.ic_merge_pdf,{ navController.navigate(ScreenName.MERGE_PDF_SCREEN) })
+            PDFoptionCard(
+                "Merge PDF",
+                R.drawable.ic_merge_pdf,
+                { navController.navigate(ScreenName.MERGE_PDF_SCREEN) })
         }
         item {
-            PDFoptionCard("Split PDF", R.drawable.ic_split_pdf,{ navController.navigate(ScreenName.SPLIT_PDF_SCREEN) })
+            PDFoptionCard(
+                "Split PDF",
+                R.drawable.ic_split_pdf,
+                { navController.navigate(ScreenName.SPLIT_PDF_SCREEN) })
         }
         item {
             PDFoptionCard(
@@ -163,7 +205,7 @@ fun PDFoptionCard(
         )
         Text(
             text = fname,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 12.sp,
             fontFamily = FontFamily.SansSerif,
             textAlign = TextAlign.Center,

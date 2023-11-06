@@ -46,7 +46,7 @@ object FileManager {
     }
 
     fun getSplitFilePath(): String {
-        val DEST = "${appDir}/${getFileName()}_%s.pdf"
+        val DEST = "${appDir}/PDF_${TimeUtilities.getCurrentTime()}_%s.pdf"
         return DEST
     }
 

@@ -80,7 +80,6 @@ object FileUtilities {
                             val addedDate = cursor.getString(columnAddedDate)
 
                             val file = File(filePath)
-                            val uri = file.toUri()
                             val size = convertByteToMB(file.length().toString())
                             val dateTime =
                                 if (modifiedDate.isNullOrEmpty())
