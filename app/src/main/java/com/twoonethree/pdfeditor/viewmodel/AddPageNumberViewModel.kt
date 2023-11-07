@@ -25,7 +25,6 @@ class AddPageNumberViewModel:ViewModel() {
     val showProgressBar = mutableStateOf(false)
     val showProgressValue = mutableStateOf(0f)
 
-
     val selectedCorner = mutableStateOf<AddPageNumberSelection>(AddPageNumberSelection.BOTTOM_RIGHT)
 
     val uiIntent = MutableStateFlow<ScreenCommonEvents>(ScreenCommonEvents.EMPTY)
@@ -49,6 +48,29 @@ class AddPageNumberViewModel:ViewModel() {
             }
             showProgressBar.value = true
             val isSuccess = PdfUtilities.addPageNumber(resolver, it, selectedPdf.value.password,::getXYposition)
+            { progress: Float -> showProgressValue.value = progress }
+            when(isSuccess)
+            {
+                true -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Page number added successfully", Green))
+                false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
+            }
+            showProgressBar.value = false
+            showProgressValue.value = 0f
+        }?: kotlin.run {
+            setUiIntent(ScreenCommonEvents.ShowSnackBar("Select file first", Blue))
+        }
+    }
+
+    fun addCompress(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
+    {
+        selectedPdf.value.uri?.let {
+            if(selectedPdf.value.totalPageNumber == 0)
+            {
+                setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
+                return@launch
+            }
+            showProgressBar.value = true
+            val isSuccess = PdfUtilities.compressPdf(resolver, it, selectedPdf.value.password)
             { progress: Float -> showProgressValue.value = progress }
             when(isSuccess)
             {

@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.kernel.crypto.BadPasswordException
+import com.itextpdf.kernel.geom.AffineTransform
 import com.itextpdf.kernel.geom.PageSize
 import com.itextpdf.kernel.pdf.EncryptionConstants
 import com.itextpdf.kernel.pdf.PdfDocument
@@ -27,6 +28,7 @@ import com.itextpdf.layout.element.Paragraph
 import com.itextpdf.layout.property.TextAlignment
 import com.itextpdf.layout.property.VerticalAlignment
 import com.twoonethree.pdfeditor.model.PdfData
+import com.twoonethree.pdfeditor.utilities.BitmapUtilities
 import com.twoonethree.pdfeditor.utilities.CachedManager
 import com.twoonethree.pdfeditor.utilities.FileManager
 import kotlinx.coroutines.Dispatchers
@@ -43,32 +45,32 @@ object PdfUtilities {
         pdfFile: File,
         onProgress: (Float) -> Unit,
     ): Boolean = withContext(Dispatchers.IO) {
-
-        val pdf = PdfDocument(PdfWriter(pdfFile))
-        val merger = PdfMerger(pdf)
-
-        val totalPageNumber = fileList.map { it.totalPageNumber }.reduce { a: Int, b: Int -> a + b }
-        var donePageNumber = 0
-
-        fileList.forEach { pdfData ->
-            pdfData.uri?.let { uri ->
-                val inputStream = resolver.openInputStream(uri)
-                val pdfReader = getPdfReader(
-                    resolver = resolver,
-                    uri = uri,
-                    pdfData.password
-                )
-                val srcPdf = PdfDocument(pdfReader)
-                merger.merge(srcPdf, 1, srcPdf.numberOfPages)
-                donePageNumber += srcPdf.numberOfPages
-                inputStream?.close()
-                srcPdf.close()
-                pdfReader.close()
-                val progress = donePageNumber * 1f / totalPageNumber
-                onProgress(progress)
-            }
-        }
         try {
+            val pdf = PdfDocument(PdfWriter(pdfFile))
+            val merger = PdfMerger(pdf)
+
+            val totalPageNumber =
+                fileList.map { it.totalPageNumber }.reduce { a: Int, b: Int -> a + b }
+            var donePageNumber = 0
+
+            fileList.forEach { pdfData ->
+                pdfData.uri?.let { uri ->
+                    val inputStream = resolver.openInputStream(uri)
+                    val pdfReader = getPdfReader(
+                        resolver = resolver,
+                        uri = uri,
+                        pdfData.password
+                    )
+                    val srcPdf = PdfDocument(pdfReader)
+                    merger.merge(srcPdf, 1, srcPdf.numberOfPages)
+                    donePageNumber += srcPdf.numberOfPages
+                    inputStream?.close()
+                    srcPdf.close()
+                    pdfReader.close()
+                    val progress = donePageNumber * 1f / totalPageNumber
+                    onProgress(progress)
+                }
+            }
             pdf.close()
         } catch (e: Exception) {
             return@withContext false
@@ -83,33 +85,33 @@ object PdfUtilities {
         splitPointList: List<Int>,
         password: String?,
     ): Boolean = withContext(Dispatchers.IO) {
-        val pdfReader = getPdfReader(
-            resolver = resolver,
-            uri = srcFile,
-            password
-        )
-        val pdfDoc = PdfDocument(pdfReader)
-        val splitDocuments = object : PdfSplitter(pdfDoc) {
-            var partNumber = 1
-            override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
-                return try {
-                    PdfWriter(String.format(dstFile, partNumber++))
-                } catch (e: FileNotFoundException) {
-                    throw RuntimeException(e)
+        try {
+            val pdfReader = getPdfReader(
+                resolver = resolver,
+                uri = srcFile,
+                password
+            )
+            val pdfDoc = PdfDocument(pdfReader)
+            val splitDocuments = object : PdfSplitter(pdfDoc) {
+                var partNumber = 1
+                override fun getNextPdfWriter(documentPageRange: PageRange?): PdfWriter? {
+                    return try {
+                        PdfWriter(String.format(dstFile, partNumber++))
+                    } catch (e: FileNotFoundException) {
+                        throw RuntimeException(e)
+                    }
                 }
-            }
-        }.splitByPageNumbers(splitPointList)
+            }.splitByPageNumbers(splitPointList)
 
-        for (doc in splitDocuments) {
-            try {
+            for (doc in splitDocuments) {
                 doc.close()
-            } catch (e: Exception) {
-                Unit
             }
+            pdfDoc.close()
+            pdfReader.close()
+            return@withContext true
+        } catch (e: Exception) {
+            return@withContext false
         }
-        pdfDoc.close()
-        pdfReader.close()
-        return@withContext true
     }
 
     suspend fun getTotalPageNumber(resolver: ContentResolver, uri: Uri): Int =
@@ -154,7 +156,6 @@ object PdfUtilities {
 
     suspend fun cachedThumbnail(resolver: ContentResolver, uri: Uri): File? =
         withContext(Dispatchers.IO) {
-            Log.e("TAG", "cachedThumbnail: ${uri}")
             resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
                 try {
                     val pdfRenderer = PdfRenderer(parcelFileDescriptor).openPage(0)
@@ -206,38 +207,44 @@ object PdfUtilities {
         getXYPosition: (Float, Float) -> Pair<Float, Float>,
         onProgress: (Float) -> Unit,
     ): Boolean = withContext(Dispatchers.IO) {
-        val src = resolver.openInputStream(uri)
         val dst = FileManager.createPdfFile()
-        val pdfReader = getPdfReader(
-            resolver = resolver,
-            uri = uri,
-            password
-        )
-        val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
-        val doc = Document(pdfDoc)
-        val numberOfPages = pdfDoc.numberOfPages
-        val x = pdfDoc.firstPage.pageSize.width
-        val y = pdfDoc.firstPage.pageSize.height
+        try {
+            val src = resolver.openInputStream(uri)
 
-        val position = getXYPosition(x, y)
-        for (i in 1..numberOfPages) {
-            doc.showTextAligned(
-                Paragraph(String.format("page %s of %s", i, numberOfPages)),
-                position.first,
-                position.second,
-                i,
-                TextAlignment.CENTER,
-                VerticalAlignment.MIDDLE,
-                0f
+            val pdfReader = getPdfReader(
+                resolver = resolver,
+                uri = uri,
+                password
             )
-            val progress = i * 1f / numberOfPages
-            onProgress(progress)
+            val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
+            val doc = Document(pdfDoc)
+            val numberOfPages = pdfDoc.numberOfPages
+            val x = pdfDoc.firstPage.pageSize.width
+            val y = pdfDoc.firstPage.pageSize.height
+
+            val position = getXYPosition(x, y)
+            for (i in 1..numberOfPages) {
+                doc.showTextAligned(
+                    Paragraph(String.format("page %s of %s", i, numberOfPages)),
+                    position.first,
+                    position.second,
+                    i,
+                    TextAlignment.CENTER,
+                    VerticalAlignment.MIDDLE,
+                    0f
+                )
+                val progress = i * 1f / numberOfPages
+                onProgress(progress)
+            }
+            src?.close()
+            pdfDoc.close()
+            doc.close()
+            pdfReader.close()
+            return@withContext true
+        } catch (e: Exception) {
+            dst.delete()
+            return@withContext false
         }
-        src?.close()
-        pdfDoc.close()
-        doc.close()
-        pdfReader.close()
-        return@withContext true
     }
 
     suspend fun changeOrientation(
@@ -247,29 +254,34 @@ object PdfUtilities {
         password: String?,
         onProgress: (Float) -> Unit,
     ): Boolean = withContext(Dispatchers.IO) {
-        val src = resolver.openInputStream(uri)
         val dst = FileManager.createPdfFile()
-        val pdfReader = getPdfReader(
-            resolver = resolver,
-            uri = uri,
-            password = password
-        )
-        val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
-        val doc = Document(pdfDoc)
-        val numberOfPages = pdfDoc.numberOfPages
+        try {
+            val src = resolver.openInputStream(uri)
+            val pdfReader = getPdfReader(
+                resolver = resolver,
+                uri = uri,
+                password = password
+            )
+            val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
+            val doc = Document(pdfDoc)
+            val numberOfPages = pdfDoc.numberOfPages
 
-        for (i in 1..numberOfPages) {
-            val page = pdfDoc.getPage(i)
-            page.setRotation(value)
-            val progress = i * 1f / numberOfPages
-            onProgress(progress)
-            page.flush()
+            for (i in 1..numberOfPages) {
+                val page = pdfDoc.getPage(i)
+                page.setRotation(value)
+                val progress = i * 1f / numberOfPages
+                onProgress(progress)
+                page.flush()
+            }
+            src?.close()
+            pdfDoc.close()
+            doc.close()
+            pdfReader.close()
+            return@withContext true
+        } catch (e: Exception) {
+            dst.delete()
+            return@withContext false
         }
-        src?.close()
-        pdfDoc.close()
-        doc.close()
-        pdfReader.close()
-        return@withContext true
     }
 
     suspend fun getOrientation(
@@ -297,25 +309,30 @@ object PdfUtilities {
         prePassword: String?,
     ): Boolean = withContext(Dispatchers.IO) {
         val dst = FileManager.createPdfFile()
-        val props = WriterProperties()
-            .setStandardEncryption(
-                password.toByteArray(),
-                password.toByteArray(),
-                EncryptionConstants.ALLOW_PRINTING,
-                EncryptionConstants.STANDARD_ENCRYPTION_128
+        try {
+            val props = WriterProperties()
+                .setStandardEncryption(
+                    password.toByteArray(),
+                    password.toByteArray(),
+                    EncryptionConstants.ALLOW_PRINTING,
+                    EncryptionConstants.STANDARD_ENCRYPTION_128
+                )
+            val pdfReader = getPdfReader(
+                resolver = resolver,
+                uri = uri,
+                prePassword
             )
-        val pdfReader = getPdfReader(
-            resolver = resolver,
-            uri = uri,
-            prePassword
-        )
-        val pdfDoc = PdfDocument(
-            pdfReader,
-            PdfWriter(dst.outputStream(), props)
-        )
-        pdfDoc.close()
-        pdfReader.close()
-        return@withContext true
+            val pdfDoc = PdfDocument(
+                pdfReader,
+                PdfWriter(dst.outputStream(), props)
+            )
+            pdfDoc.close()
+            pdfReader.close()
+            return@withContext true
+        } catch (e: Exception) {
+            dst.delete()
+            return@withContext false
+        }
     }
 
     suspend fun removePassword(
@@ -324,12 +341,12 @@ object PdfUtilities {
         password: String?,
     ): Boolean = withContext(Dispatchers.IO) {
         val dst = FileManager.createPdfFile()
-        val pdfReader = getPdfReader(
-            resolver = resolver,
-            uri = uri,
-            password = password
-        )
         try {
+            val pdfReader = getPdfReader(
+                resolver = resolver,
+                uri = uri,
+                password = password
+            )
             val pdfDoc = PdfDocument(
                 pdfReader,
                 PdfWriter(dst.outputStream())
@@ -338,6 +355,7 @@ object PdfUtilities {
             pdfReader.close()
             return@withContext true
         } catch (e: Exception) {
+            dst.delete()
             return@withContext false
         }
     }
@@ -384,98 +402,177 @@ object PdfUtilities {
         password: String?,
         pageOrderList: List<Int>,
     ): Boolean = withContext(Dispatchers.IO) {
-        val inputStream = resolver.openInputStream(uri)
         val dst = FileManager.createPdfFile()
-        val pdfReader = getPdfReader(
-            resolver = resolver,
-            uri = uri,
-            password
-        )
-        val srcDoc = PdfDocument(pdfReader)
-        val dstDoc = PdfDocument(PdfWriter(dst))
+        try {
+            val inputStream = resolver.openInputStream(uri)
+            val pdfReader = getPdfReader(
+                resolver = resolver,
+                uri = uri,
+                password
+            )
+            val srcDoc = PdfDocument(pdfReader)
+            val dstDoc = PdfDocument(PdfWriter(dst))
 
-        dstDoc.initializeOutlines()
+            dstDoc.initializeOutlines()
 
-        srcDoc.copyPagesTo(pageOrderList, dstDoc)
+            srcDoc.copyPagesTo(pageOrderList, dstDoc)
 
-        inputStream?.close()
-        srcDoc.close()
-        dstDoc.close()
-        pdfReader.close()
-        return@withContext true
+            inputStream?.close()
+            srcDoc.close()
+            dstDoc.close()
+            pdfReader.close()
+            return@withContext true
+        } catch (e: Exception) {
+            dst.delete()
+            return@withContext false
+        }
     }
 
     suspend fun imageToPdf(
         resolver: ContentResolver,
         uriList: List<Uri>,
     ): Boolean = withContext(Dispatchers.IO) {
-
         val dst = FileManager.createPdfFile()
-        val pdfDocument = PdfDocument(PdfWriter(dst)).also {
-            it.defaultPageSize = PageSize.A4
-        }
-        val document = Document(pdfDocument)
+        try {
+            val pdfDocument = PdfDocument(PdfWriter(dst)).also {
+                it.defaultPageSize = PageSize.A4
+            }
+            val document = Document(pdfDocument)
 
-        uriList.forEach {
-            val srcStream = resolver.openInputStream(it)
-            val imageByteArray = srcStream?.readBytes()
-            val imageData = ImageDataFactory.create(imageByteArray)
-            val image = Image(imageData)
-            document.pdfDocument.defaultPageSize = PageSize(image.imageWidth, image.imageHeight)
-            document.add(image)
-            srcStream?.close()
+            uriList.forEach {
+                val srcStream = resolver.openInputStream(it)
+                val imageByteArray = srcStream?.readBytes()
+                val imageData = ImageDataFactory.create(imageByteArray)
+                val image = Image(imageData)
+                document.pdfDocument.defaultPageSize = PageSize(image.imageWidth, image.imageHeight)
+                document.add(image)
+                srcStream?.close()
+            }
+            pdfDocument.close()
+            document.close()
+            return@withContext true
         }
-        pdfDocument.close()
-        document.close()
-        return@withContext true
+        catch (e: Exception) {
+            dst.delete()
+            return@withContext false
+        }
     }
 
     suspend fun addWaterMark(
         resolver: ContentResolver,
         uri: Uri,
         password: String?,
-        imageUri:Uri,
+        imageUri: Uri,
         onProgress: (Float) -> Unit,
     ): Boolean = withContext(Dispatchers.IO) {
         val dst = FileManager.createPdfFile()
-        val pdfWriter = PdfWriter(dst)
-        val pdfReader = getPdfReader(
-            resolver = resolver,
-            uri = uri,
-            password
-        )
-        val pdfDoc = PdfDocument(pdfReader, pdfWriter)
-        val doc = Document(pdfDoc)
+        try {
+            val pdfWriter = PdfWriter(dst)
+            val pdfReader = getPdfReader(
+                resolver = resolver,
+                uri = uri,
+                password
+            )
+            val pdfDoc = PdfDocument(pdfReader, pdfWriter)
+            val doc = Document(pdfDoc)
 
-        val imgStream = resolver.openInputStream(imageUri)
-        val imageByteArray = imgStream?.readBytes()
-        val imageData = ImageDataFactory.create(imageByteArray)
+            val imgStream = resolver.openInputStream(imageUri)
 
-        Log.e("TAG", "addWaterMark123: ${imageByteArray?.size}", )
-        val w = imageData.width
-        val h = imageData.height
+            imgStream?.let {
 
-        val gs1 = PdfExtGState().setFillOpacity(0.3f)
+                val pdfPage1 = pdfDoc.getPage(1)
+                val pageSize1 = pdfPage1.pageSizeWithRotation
 
-        for (i in 1..pdfDoc.numberOfPages) {
-            val pdfPage = pdfDoc.getPage(i)
-            val pageSize = pdfPage.pageSizeWithRotation
+                val orgImgBytes = it.readBytes()
+                val imageByteArray =
+                    BitmapUtilities.resizeBitmap(orgImgBytes, pageSize1.width, pageSize1.height)
+                val imageData = ImageDataFactory.create(imageByteArray)
 
-            pdfPage.isIgnorePageRotationForContent = true
-            val x = (pageSize.getLeft() + pageSize.getRight()) / 2
-            val y = (pageSize.getTop() + pageSize.getBottom()) / 2
-            val over = PdfCanvas(pdfDoc.getPage(i))
-            over.saveState()
-            over.setExtGState(gs1)
-            over.addImage(imageData,x - w / 2, y - h / 2, true)
-            over.restoreState()
-            pdfPage.flush()
-            val progress = i * 1f / pdfDoc.numberOfPages
-            onProgress(progress)
+                Log.e("TAG", "addWaterMark1: ${orgImgBytes.size} ${imageByteArray.size}")
+                val w = imageData.width
+                val h = imageData.height
+
+                Log.e("TAG", "addWaterMark2: $w $h ${imageData.rotation}")
+
+                val gs1 = PdfExtGState().setFillOpacity(0.5f)
+
+                for (i in 1..pdfDoc.numberOfPages) {
+                    val pdfPage = pdfDoc.getPage(i)
+                    val pageSize = pdfPage.pageSize
+
+                    Log.e("TAG", "addWaterMark3: ${pageSize}")
+
+                    pdfPage.isIgnorePageRotationForContent = false
+                    val x = (pageSize.getLeft() + pageSize.getRight()) / 2
+                    val y = (pageSize.getTop() + pageSize.getBottom()) / 2
+                    val over = PdfCanvas(pdfDoc.getPage(i))
+                    over.saveState()
+                    over.setExtGState(gs1)
+                    over.addImage(imageData, x - w / 2, y - h / 2, false)
+                    over.restoreState()
+                    pdfPage.flush()
+                    val progress = i * 1f / pdfDoc.numberOfPages
+                    onProgress(progress)
+                }
+                doc.close()
+                pdfDoc.close()
+                imgStream.close()
+                return@withContext true
+            }
+
+            return@withContext false
         }
-        doc.close()
-        pdfDoc.close()
-        imgStream?.close()
-        return@withContext true
+        catch (e: Exception) {
+            dst.delete()
+            return@withContext false
+        }
+    }
+
+    suspend fun compressPdf(
+        resolver: ContentResolver,
+        uri: Uri,
+        password: String?,
+        onProgress: (Float) -> Unit,
+    ):Boolean = withContext(Dispatchers.IO) {
+        val dst = FileManager.createPdfFile()
+        try {
+            val pdfReader = getPdfReader(
+                resolver = resolver,
+                uri = uri,
+                password = password
+            )
+            val pdfWriter = PdfWriter(dst)
+
+            val destpdf = PdfDocument(pdfWriter)
+            val srcPdf = PdfDocument(pdfReader)
+
+            for (i in 1..srcPdf.numberOfPages) {
+                val origPage = srcPdf.getPage(i)
+                val orig = origPage.pageSizeWithRotation
+                val page = destpdf.addNewPage(PageSize(orig.width * 0.5f, orig.height * 0.5f))
+
+                val transformationMatrix = AffineTransform.getScaleInstance(
+                    0.5,
+                    0.5
+                )
+
+                val canvas = PdfCanvas(page)
+                canvas.concatMatrix(transformationMatrix)
+                val pageCopy = origPage.copyAsFormXObject(destpdf)
+                canvas.addXObject(pageCopy, 0f, 0f)
+
+                val progress = i * 1f / srcPdf.numberOfPages
+                onProgress(progress)
+            }
+
+            val doc = Document(destpdf)
+
+            doc.close()
+            return@withContext true
+        } catch (e: Exception) {
+            Log.e("TAG", "compressPdf: ${e.message}")
+            dst.delete()
+            return@withContext false
+        }
     }
 }
