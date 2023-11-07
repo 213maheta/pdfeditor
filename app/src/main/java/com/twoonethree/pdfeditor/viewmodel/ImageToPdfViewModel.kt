@@ -12,6 +12,7 @@ import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.ui.theme.Blue
 import com.twoonethree.pdfeditor.ui.theme.Green
 import com.twoonethree.pdfeditor.ui.theme.Orange
+import com.twoonethree.pdfeditor.utilities.FileManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -55,6 +56,7 @@ class ImageToPdfViewModel:ViewModel() {
             val isSuccess =PdfUtilities.imageToPdf(
                 resolver = resolver,
                 uriList = it,
+                FileManager.createPdfFile()
             )
             when(isSuccess)
             {

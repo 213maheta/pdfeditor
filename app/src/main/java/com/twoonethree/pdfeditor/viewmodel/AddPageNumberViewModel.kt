@@ -12,6 +12,7 @@ import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.ui.theme.Blue
 import com.twoonethree.pdfeditor.ui.theme.Green
 import com.twoonethree.pdfeditor.ui.theme.Orange
+import com.twoonethree.pdfeditor.utilities.FileManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -47,7 +48,7 @@ class AddPageNumberViewModel:ViewModel() {
                 return@launch
             }
             showProgressBar.value = true
-            val isSuccess = PdfUtilities.addPageNumber(resolver, it, selectedPdf.value.password,::getXYposition)
+            val isSuccess = PdfUtilities.addPageNumber(resolver, it, FileManager.createPdfFile(),selectedPdf.value.password,::getXYposition)
             { progress: Float -> showProgressValue.value = progress }
             when(isSuccess)
             {
@@ -70,7 +71,7 @@ class AddPageNumberViewModel:ViewModel() {
                 return@launch
             }
             showProgressBar.value = true
-            val isSuccess = PdfUtilities.compressPdf(resolver, it, selectedPdf.value.password)
+            val isSuccess = PdfUtilities.compressPdf(resolver, it, FileManager.createPdfFile() ,selectedPdf.value.password)
             { progress: Float -> showProgressValue.value = progress }
             when(isSuccess)
             {

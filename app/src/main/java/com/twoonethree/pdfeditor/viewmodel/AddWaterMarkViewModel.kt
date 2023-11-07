@@ -11,6 +11,7 @@ import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.ui.theme.Blue
 import com.twoonethree.pdfeditor.ui.theme.Green
 import com.twoonethree.pdfeditor.ui.theme.Orange
+import com.twoonethree.pdfeditor.utilities.FileManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -53,6 +54,7 @@ class AddWaterMarkViewModel:ViewModel() {
             val isSuccess = PdfUtilities.addWaterMark(
                 resolver = resolver,
                 uri = selectedPdf.value.uri!!,
+                FileManager.createPdfFile(),
                 password = selectedPdf.value.password,
                 imageUri = waterMarkUri.value!!
             ){ progress: Float -> showProgressValue.value = progress }

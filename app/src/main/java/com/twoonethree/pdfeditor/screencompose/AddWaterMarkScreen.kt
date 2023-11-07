@@ -100,7 +100,7 @@ fun AddWaterMarkScreen(navController:NavController)
         }
 
     MyTopAppBar(
-        titleId = R.string.add_page_number,
+        titleId = R.string.add_water_mark,
         backClick = { navController.navigateUp() },
         doneClick = { vm.addWaterMark(resolver = contentResolver) },
         floatBtnClick = { pickPdfDocument.launch(arrayOf(context.getString(R.string.application_pdf))) },

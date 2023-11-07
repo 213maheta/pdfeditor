@@ -10,6 +10,7 @@ import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.ui.theme.Blue
 import com.twoonethree.pdfeditor.ui.theme.Green
 import com.twoonethree.pdfeditor.ui.theme.Orange
+import com.twoonethree.pdfeditor.utilities.FileManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -48,6 +49,7 @@ class LockPdfViewModel: ViewModel() {
             val isSuccess = PdfUtilities.setPassword(
                 resolver = resolver,
                 uri = it,
+                FileManager.createPdfFile(),
                 password.value,
                 selectedPdf.value.password)
 
