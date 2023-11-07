@@ -1,6 +1,8 @@
-package com.twoonethree.pdfeditor.screencompose
+package com.twoonethree.pdfeditor.pdfviewver
 
-import androidx.compose.foundation.Image
+import android.content.ContentResolver
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
@@ -14,12 +16,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -28,23 +30,25 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import com.twoonethree.pdfeditor.R
+import com.twoonethree.pdfeditor.screencompose.CircularProgressBar
+import com.twoonethree.pdfeditor.screencompose.MyTopAppBar
 import com.twoonethree.pdfeditor.utilities.StringUtilities
-import com.twoonethree.pdfeditor.viewmodel.PdfViewerViewModel
+import kotlinx.coroutines.Job
+import java.io.File
 
 @Composable
-fun PdfViewerScreen(navController: NavHostController, selectedFile: String?)
-{
+fun PdfViewerScreen(navController: NavHostController, selectedFile: String?) {
     val vm = viewModel<PdfViewerViewModel>()
-    val context = LocalContext.current
     val contentResolver = LocalContext.current.contentResolver
     val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp * 4
+    vm.screenWidth = configuration.screenWidthDp * 4
 
-    LaunchedEffect(key1 = Unit){
+    LaunchedEffect(key1 = Unit) {
         selectedFile?.let {
-            val uri = StringUtilities.addSlash(it).toUri()
-            vm.getAllPage(contentResolver, uri, screenWidth)
+            vm.selectedUri = StringUtilities.addSlash(it).toUri()
+            vm.getPdfPage(contentResolver)
         }
     }
 
@@ -56,7 +60,7 @@ fun PdfViewerScreen(navController: NavHostController, selectedFile: String?)
                     .fillMaxSize(),
                 contentAlignment = Alignment.TopCenter
             ) {
-                PdfPageListView(vm.pdfPageList.toList())
+                PdfPageListView(vm.pdfPageList.toList(), vm::getPdfPage)
             }
         }
 
@@ -67,14 +71,30 @@ fun PdfViewerScreen(navController: NavHostController, selectedFile: String?)
         floatBtnClick = { },
         innerContent = innerContent,
     )
+
+    AnimatedVisibility(visible = vm.showProgressBar.value) {
+        CircularProgressBar()
+    }
 }
 
 @Composable
-fun PdfPageListView(bitmapList: List<ImageBitmap>)
-{
+fun PdfPageListView(bitmapList: List<File>, getPdfPage: (ContentResolver) -> Job) {
+    val contentResolver = LocalContext.current.contentResolver
     val listState = rememberLazyListState()
     val scale = remember { mutableStateOf(1f) }
     val offset = remember { mutableStateOf(Offset.Zero) }
+    val lastVisibleIndex = remember { derivedStateOf { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index } }
+
+    LaunchedEffect(key1 = lastVisibleIndex.value)
+    {
+        Log.e("TAG", "PdfPageListView: ${lastVisibleIndex.value}", )
+        lastVisibleIndex.value?.let {
+            if(bitmapList.size - it<5)
+            {
+                getPdfPage(contentResolver)
+            }
+        }
+    }
 
     val state = rememberTransformableState { zoomChange, offsetChange, rotationChange ->
         scale.value *= zoomChange
@@ -91,21 +111,18 @@ fun PdfPageListView(bitmapList: List<ImageBitmap>)
             }
             .transformable(state = state)
             .fillMaxSize()
-        )
+    )
     {
-        items(bitmapList){
+        items(bitmapList) {
             ItemPage(it)
-
         }
     }
-
 }
 
 @Composable
-fun ItemPage(imageBitmap: ImageBitmap)
-{
-    Image(
-        bitmap = imageBitmap,
+fun ItemPage(imageBitmap: File) {
+    AsyncImage(
+        model = imageBitmap,
         contentDescription = "Pdf page",
         modifier = Modifier
             .padding(horizontal = 5.dp)
@@ -114,5 +131,5 @@ fun ItemPage(imageBitmap: ImageBitmap)
                 color = colorResource(id = R.color.grey_light),
                 shape = RoundedCornerShape(4.dp)
             )
-        )
+    )
 }

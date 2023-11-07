@@ -176,34 +176,54 @@ object PdfUtilities {
     suspend fun getPdfPage(
         resolver: ContentResolver,
         uri: Uri,
-        screenWidth: Int
-    ): MutableList<ImageBitmap> = withContext(Dispatchers.IO)
+        screenWidth: Int,
+        iterator: Int,
+        slotSize: Int
+    ): List<File> = withContext(Dispatchers.IO)
     {
-        val bitmapList = mutableListOf<ImageBitmap>()
+        val imageList = mutableListOf<File>()
+
         resolver.openFileDescriptor(uri, "r")?.use {
             val pdfRenderer = PdfRenderer(it)
             val pageCount = pdfRenderer.pageCount
-            for (i in 0 until pageCount) {
-                val page = pdfRenderer.openPage(i)
-                val heightFactor = page.height / page.width.toFloat()
-                val bitmap = Bitmap.createBitmap(
-                    screenWidth,
-                    (screenWidth * heightFactor).toInt(),
-                    Bitmap.Config.ARGB_8888
-                )
-                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                page.close()
-                bitmapList.add(bitmap.asImageBitmap())
+
+            if(iterator >= pageCount)
+                return@withContext imageList
+
+            var iterateUntil = iterator + slotSize
+
+            if (iterateUntil > pageCount)
+                iterateUntil = pageCount
+
+            for (i in iterator until iterateUntil) {
+                val value = CachedManager.isFileExist(uri, i)
+                value?.let {
+                    imageList.add(it)
+                }?: kotlin.run {
+                    val page = pdfRenderer.openPage(i)
+                    val heightFactor = page.height / page.width.toFloat()
+                    val bitmap = Bitmap.createBitmap(
+                        screenWidth,
+                        (screenWidth * heightFactor).toInt(),
+                        Bitmap.Config.ARGB_8888
+                    )
+                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    page.close()
+                    val data = CachedManager.cachedBitmap(bitmap, uri, i)
+                    data?.let { it1 -> imageList.add(it1) }
+                    bitmap.recycle()
+                }
             }
             pdfRenderer.close()
         }
-        return@withContext bitmapList
+
+        return@withContext imageList
     }
 
     suspend fun addPageNumber(
         resolver: ContentResolver,
         uri: Uri,
-        dst:File,
+        dst: File,
         password: String?,
         getXYPosition: (Rectangle) -> Pair<Float, Float>,
         onProgress: (Float) -> Unit,
@@ -249,12 +269,11 @@ object PdfUtilities {
     suspend fun changeOrientation(
         resolver: ContentResolver,
         uri: Uri,
-        dst:File,
+        dst: File,
         value: Int,
         password: String?,
         onProgress: (Float) -> Unit,
     ): Boolean = withContext(Dispatchers.IO) {
-
         try {
             val src = resolver.openInputStream(uri)
             val pdfReader = getPdfReader(
@@ -305,7 +324,7 @@ object PdfUtilities {
     suspend fun setPassword(
         resolver: ContentResolver,
         uri: Uri,
-        dst:File,
+        dst: File,
         password: String,
         prePassword: String?,
     ): Boolean = withContext(Dispatchers.IO) {
@@ -338,7 +357,7 @@ object PdfUtilities {
     suspend fun removePassword(
         resolver: ContentResolver,
         uri: Uri,
-        dst:File,
+        dst: File,
         password: String?,
     ): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -399,7 +418,7 @@ object PdfUtilities {
     suspend fun reOrderPdf(
         resolver: ContentResolver,
         uri: Uri,
-        dst:File,
+        dst: File,
         password: String?,
         pageOrderList: List<Int>,
     ): Boolean = withContext(Dispatchers.IO) {
@@ -431,7 +450,7 @@ object PdfUtilities {
     suspend fun imageToPdf(
         resolver: ContentResolver,
         uriList: List<Uri>,
-        dst:File,
+        dst: File,
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             val pdfDocument = PdfDocument(PdfWriter(dst)).also {
@@ -451,8 +470,7 @@ object PdfUtilities {
             pdfDocument.close()
             document.close()
             return@withContext true
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             dst.delete()
             return@withContext false
         }
@@ -461,7 +479,7 @@ object PdfUtilities {
     suspend fun addWaterMark(
         resolver: ContentResolver,
         uri: Uri,
-        dst:File,
+        dst: File,
         password: String?,
         imageUri: Uri,
         onProgress: (Float) -> Unit,
@@ -521,8 +539,7 @@ object PdfUtilities {
             }
 
             return@withContext false
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             dst.delete()
             return@withContext false
         }
@@ -531,10 +548,10 @@ object PdfUtilities {
     suspend fun compressPdf(
         resolver: ContentResolver,
         uri: Uri,
-        dst:File,
+        dst: File,
         password: String?,
         onProgress: (Float) -> Unit,
-    ):Boolean = withContext(Dispatchers.IO) {
+    ): Boolean = withContext(Dispatchers.IO) {
         try {
             val pdfReader = getPdfReader(
                 resolver = resolver,
@@ -549,7 +566,7 @@ object PdfUtilities {
             for (i in 1..srcPdf.numberOfPages) {
                 val origPage = srcPdf.getPage(i)
                 val orig = origPage.pageSizeWithRotation
-                val page = destpdf.addNewPage(PageSize(orig.width*0.5f,orig.height*0.5f ))
+                val page = destpdf.addNewPage(PageSize(orig.width * 0.5f, orig.height * 0.5f))
 
                 val transformationMatrix = AffineTransform.getScaleInstance(
                     0.5,

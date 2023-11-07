@@ -30,7 +30,7 @@ object CachedManager {
         try {
             val outFile = File(cacheDir, dest).apply { createNewFile() }
             val out= FileOutputStream(outFile)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 1, out)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 10, out)
             out.flush()
             out.close()
             return outFile
@@ -38,6 +38,27 @@ object CachedManager {
             e.printStackTrace()
             return null
         }
+    }
+
+    fun cachedBitmap(bitmap: Bitmap, uri: Uri, index:Int): File? {
+        val dest = uriToFileName(uri)
+        try {
+            val outFile = File(cacheDir, "${dest}_$index").apply { createNewFile() }
+            val out= FileOutputStream(outFile)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            out.flush()
+            out.close()
+            return outFile
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
+    }
+
+    fun isFileExist(uri: Uri, index:Int): File? {
+        val cachedFileName = uriToFileName(uri)
+        val cachedFile = File(cacheDir,  "${cachedFileName}_$index")
+        return if(cachedFile.exists()) cachedFile else null
     }
 
     suspend fun cachedImageBytes(imageByteArray: ByteArray, uri: Uri): File? = withContext(Dispatchers.IO){
