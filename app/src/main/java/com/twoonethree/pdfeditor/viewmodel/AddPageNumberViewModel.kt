@@ -1,10 +1,13 @@
 package com.twoonethree.pdfeditor.viewmodel
 
 import android.content.ContentResolver
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.itextpdf.kernel.geom.PageSize
+import com.itextpdf.kernel.geom.Rectangle
 import com.twoonethree.pdfeditor.events.AddPageNumberSelection
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
@@ -62,37 +65,15 @@ class AddPageNumberViewModel:ViewModel() {
         }
     }
 
-    fun addCompress(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
-    {
-        selectedPdf.value.uri?.let {
-            if(selectedPdf.value.totalPageNumber == 0)
-            {
-                setUiIntent(ScreenCommonEvents.ShowPasswordDialog)
-                return@launch
-            }
-            showProgressBar.value = true
-            val isSuccess = PdfUtilities.compressPdf(resolver, it, FileManager.createPdfFile() ,selectedPdf.value.password)
-            { progress: Float -> showProgressValue.value = progress }
-            when(isSuccess)
-            {
-                true -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Page number added successfully", Green))
-                false -> setUiIntent(ScreenCommonEvents.ShowSnackBar("Something gone wrong", Orange))
-            }
-            showProgressBar.value = false
-            showProgressValue.value = 0f
-        }?: kotlin.run {
-            setUiIntent(ScreenCommonEvents.ShowSnackBar("Select file first", Blue))
-        }
-    }
-
-    fun getXYposition(x:Float, y:Float): Pair<Float, Float> {
+    fun getXYposition(pageSize: Rectangle): Pair<Float, Float> {
+        Log.e("TAG", "getXYposition: ${pageSize.left} ${pageSize.right} ${pageSize.top} ${pageSize.bottom} ${pageSize.x} ${pageSize.y}", )
         when(selectedCorner.value)
         {
-            is AddPageNumberSelection.TOP_LEFT -> return Pair(40f,y-30f)
-            is AddPageNumberSelection.TOP_RIGHT -> return Pair(x-40,y-30f)
-            is AddPageNumberSelection.BOTTOM_LEFT -> return Pair(40f,30f)
-            is AddPageNumberSelection.BOTTOM_RIGHT -> return Pair(x-40,30f)
-            is AddPageNumberSelection.EMPTY -> return Pair(x,y)
+            is AddPageNumberSelection.TOP_LEFT -> return Pair(pageSize.left + 40, pageSize.top - 30)
+            is AddPageNumberSelection.TOP_RIGHT -> return Pair(pageSize.right - 40, pageSize.top - 30)
+            is AddPageNumberSelection.BOTTOM_LEFT -> return Pair(pageSize.left + 40, pageSize.bottom + 30)
+            is AddPageNumberSelection.BOTTOM_RIGHT -> return Pair(pageSize.right - 40, pageSize.bottom + 30)
+            is AddPageNumberSelection.EMPTY -> return Pair(pageSize.x, pageSize.y)
         }
     }
 }

@@ -97,7 +97,7 @@ fun AddPageNumberScreen(navController: NavController)
     MyTopAppBar(
         titleId = R.string.add_page_number,
         backClick = { navController.navigateUp() },
-        doneClick = { vm.addCompress(resolver = contentResolver) },
+        doneClick = { vm.addPageNumber(resolver = contentResolver) },
         floatBtnClick = { pickPdfDocument.launch(arrayOf(context.getString(R.string.application_pdf))) },
         innerContent = innerContent,
     )

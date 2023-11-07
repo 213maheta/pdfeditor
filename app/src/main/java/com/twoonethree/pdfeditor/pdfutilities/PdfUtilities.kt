@@ -11,6 +11,7 @@ import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.kernel.crypto.BadPasswordException
 import com.itextpdf.kernel.geom.AffineTransform
 import com.itextpdf.kernel.geom.PageSize
+import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.EncryptionConstants
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfReader
@@ -204,7 +205,7 @@ object PdfUtilities {
         uri: Uri,
         dst:File,
         password: String?,
-        getXYPosition: (Float, Float) -> Pair<Float, Float>,
+        getXYPosition: (Rectangle) -> Pair<Float, Float>,
         onProgress: (Float) -> Unit,
     ): Boolean = withContext(Dispatchers.IO) {
         try {
@@ -218,10 +219,9 @@ object PdfUtilities {
             val pdfDoc = PdfDocument(pdfReader, PdfWriter(dst))
             val doc = Document(pdfDoc)
             val numberOfPages = pdfDoc.numberOfPages
-            val x = pdfDoc.firstPage.pageSize.width
-            val y = pdfDoc.firstPage.pageSize.height
+            val pageSize = pdfDoc.firstPage.pageSize
 
-            val position = getXYPosition(x, y)
+            val position = getXYPosition(pageSize)
             for (i in 1..numberOfPages) {
                 doc.showTextAligned(
                     Paragraph(String.format("page %s of %s", i, numberOfPages)),
