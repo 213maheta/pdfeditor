@@ -122,13 +122,13 @@ fun CreatedPdfList(
 fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit, onMenuClick: (PdfData) -> Unit) {
     val resolver = LocalContext.current.contentResolver
     val vm = viewModel<MyCreationViewModel>()
-    val thumbnailPath = remember {
+    val thumbnail = remember {
         mutableStateOf<File?>(null)
     }
 
     LaunchedEffect(key1 = pdfData) {
         pdfData.uri?.let {
-            thumbnailPath.value = vm.getThumbNail(resolver, it)
+            thumbnail.value = vm.getThumbNail(resolver, it)
         }
     }
 
@@ -140,7 +140,7 @@ fun ItemPdf(pdfData: PdfData, onItemClick: (String) -> Unit, onMenuClick: (PdfDa
             .padding(10.dp)
             .fillMaxWidth()
     ) {
-        thumbnailPath.value?.let {
+        thumbnail.value?.let {
             AsyncImage(
                 model = it,
                 contentDescription = "",

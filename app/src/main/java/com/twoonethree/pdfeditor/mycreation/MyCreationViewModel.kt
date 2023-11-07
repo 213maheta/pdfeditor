@@ -92,12 +92,7 @@ class MyCreationViewModel:ViewModel() {
 
     suspend fun getThumbNail(contentResolver: ContentResolver, uri: Uri): File? = withContext(Dispatchers.Default)
     {
-        val value = CachedManager.isFileExist(uri)
-        if(value == null)
-        {
-            return@withContext PdfUtilities.cachedThumbnail(contentResolver, uri)
-        }
-        return@withContext value
+        return@withContext PdfUtilities.cachedThumbnail(contentResolver, uri)
     }
     fun shareIntent(shareUri: Uri): Intent {
         return Intent().apply {

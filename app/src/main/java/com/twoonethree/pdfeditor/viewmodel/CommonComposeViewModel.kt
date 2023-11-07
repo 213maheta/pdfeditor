@@ -16,16 +16,8 @@ class CommonComposeViewModel: ViewModel() {
 
     val message = mutableStateOf("")
     var status = Green
-
-    suspend fun getThumbNail(contentResolver: ContentResolver, uri: Uri): File? = withContext(
-        Dispatchers.Default)
+    suspend fun getThumbNail(contentResolver: ContentResolver, uri: Uri): File? = withContext(Dispatchers.IO)
     {
-        val value = CachedManager.isFileExist(uri)
-        if(value == null)
-        {
-            return@withContext PdfUtilities.cachedThumbnail(contentResolver, uri)
-        }
-        return@withContext value
+        return@withContext PdfUtilities.cachedThumbnail(contentResolver, uri)
     }
-
 }

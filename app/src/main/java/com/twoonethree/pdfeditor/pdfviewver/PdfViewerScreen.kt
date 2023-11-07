@@ -87,7 +87,6 @@ fun PdfPageListView(bitmapList: List<File>, getPdfPage: (ContentResolver) -> Job
 
     LaunchedEffect(key1 = lastVisibleIndex.value)
     {
-        Log.e("TAG", "PdfPageListView: ${lastVisibleIndex.value}", )
         lastVisibleIndex.value?.let {
             if(bitmapList.size - it<5)
             {

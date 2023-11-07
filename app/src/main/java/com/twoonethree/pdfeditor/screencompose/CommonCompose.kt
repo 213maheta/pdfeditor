@@ -361,7 +361,6 @@ fun CircularProgressBar(progress: Float? = null) {
             alpha = 0.6f
         }
         .background(color = colorResource(id = R.color.grey_light))
-
     )
     {
         progress?.let {

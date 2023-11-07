@@ -156,19 +156,23 @@ object PdfUtilities {
 
     suspend fun cachedThumbnail(resolver: ContentResolver, uri: Uri): File? =
         withContext(Dispatchers.IO) {
-            resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
-                try {
-                    val pdfRenderer = PdfRenderer(parcelFileDescriptor).openPage(0)
-                    val bitmap = Bitmap.createBitmap(
-                        50,
-                        50,
-                        Bitmap.Config.ARGB_8888
-                    )
-                    pdfRenderer.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                    pdfRenderer.close()
-                    return@withContext CachedManager.cachedBitmap(bitmap, uri)
-                } catch (e: Exception) {
-                    return@withContext null
+            CachedManager.isFileExist(uri)?.let {
+                return@withContext it
+            }?: kotlin.run {
+                resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
+                    try {
+                        val pdfRenderer = PdfRenderer(parcelFileDescriptor).openPage(0)
+                        val bitmap = Bitmap.createBitmap(
+                            50,
+                            50,
+                            Bitmap.Config.ARGB_8888
+                        )
+                        pdfRenderer.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                        pdfRenderer.close()
+                        return@withContext CachedManager.cachedBitmap(bitmap, uri)
+                    } catch (e: Exception) {
+                        return@withContext null
+                    }
                 }
             }
         }

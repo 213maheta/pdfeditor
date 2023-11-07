@@ -33,6 +33,7 @@ object CachedManager {
             bitmap.compress(Bitmap.CompressFormat.PNG, 10, out)
             out.flush()
             out.close()
+            bitmap.recycle()
             return outFile
         } catch (e: Exception) {
             e.printStackTrace()

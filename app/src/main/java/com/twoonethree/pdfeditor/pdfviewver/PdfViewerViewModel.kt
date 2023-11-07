@@ -33,5 +33,4 @@ class PdfViewerViewModel: ViewModel() {
                showProgressBar.value = false
           }
      }
-
 }
