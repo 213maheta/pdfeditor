@@ -43,7 +43,7 @@ object PdfUtilities {
         fileList: List<PdfData>,
         pdfFile: File,
         onProgress: (Float) -> Unit,
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): Boolean {
         try {
             val pdf = PdfDocument(PdfWriter(pdfFile))
             val merger = PdfMerger(pdf)
@@ -71,10 +71,10 @@ object PdfUtilities {
                 }
             }
             pdf.close()
-            return@withContext true
+            return true
         } catch (e: Exception) {
             pdfFile.delete()
-            return@withContext false
+            return false
         }
     }
 
@@ -114,8 +114,7 @@ object PdfUtilities {
         }
     }
 
-    suspend fun getTotalPageNumber(resolver: ContentResolver, uri: Uri): Int =
-        withContext(Dispatchers.IO) {
+    suspend fun getTotalPageNumber(resolver: ContentResolver, uri: Uri): Int {
             try {
                 val inputStream = resolver.openInputStream(uri)
                 val pdfReader = PdfReader(inputStream)
@@ -125,17 +124,16 @@ object PdfUtilities {
                 inputStream?.close()
                 pdf.close()
                 pdfReader.close()
-                return@withContext pageCount
+                return pageCount
             } catch (e: BadPasswordException) {
-                return@withContext 0
+                return 0
             } catch (e: Exception) {
-                return@withContext -1
+                return -1
             }
         }
 
 
-    suspend fun getPdfThumbnail(resolver: ContentResolver, uri: Uri): ImageBitmap? =
-        withContext(Dispatchers.IO) {
+    suspend fun getPdfThumbnail(resolver: ContentResolver, uri: Uri): ImageBitmap?{
             resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
                 try {
                     val pdfRenderer = PdfRenderer(parcelFileDescriptor).openPage(0)
@@ -146,18 +144,17 @@ object PdfUtilities {
                     )
                     pdfRenderer.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                     pdfRenderer.close()
-                    return@withContext bitmap.asImageBitmap()
+                    return bitmap.asImageBitmap()
                 } catch (e: Exception) {
-                    return@withContext null
+                    return null
                 }
             }
-            return@withContext null
+            return null
         }
 
-    suspend fun cachedThumbnail(resolver: ContentResolver, uri: Uri): File? =
-        withContext(Dispatchers.IO) {
+    suspend fun cachedThumbnail(resolver: ContentResolver, uri: Uri): File? {
             CachedManager.isFileExist(uri)?.let {
-                return@withContext it
+                return it
             }?: kotlin.run {
                 resolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
                     try {
@@ -169,11 +166,12 @@ object PdfUtilities {
                         )
                         pdfRenderer.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                         pdfRenderer.close()
-                        return@withContext CachedManager.cachedBitmap(bitmap, uri)
+                        return CachedManager.cachedBitmap(bitmap, uri)
                     } catch (e: Exception) {
-                        return@withContext null
+                        return null
                     }
                 }
+                return null
             }
         }
 
@@ -183,7 +181,7 @@ object PdfUtilities {
         screenWidth: Int,
         iterator: Int,
         slotSize: Int
-    ): List<File> = withContext(Dispatchers.IO)
+    ): List<File>
     {
         val imageList = mutableListOf<File>()
 
@@ -192,7 +190,7 @@ object PdfUtilities {
             val pageCount = pdfRenderer.pageCount
 
             if(iterator >= pageCount)
-                return@withContext imageList
+                return imageList
 
             var iterateUntil = iterator + slotSize
 
@@ -221,7 +219,7 @@ object PdfUtilities {
             pdfRenderer.close()
         }
 
-        return@withContext imageList
+        return imageList
     }
 
     suspend fun addPageNumber(
@@ -231,7 +229,7 @@ object PdfUtilities {
         password: String?,
         getXYPosition: (Rectangle) -> Pair<Float, Float>,
         onProgress: (Float) -> Unit,
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): Boolean  {
         try {
             val src = resolver.openInputStream(uri)
 
@@ -263,10 +261,10 @@ object PdfUtilities {
             pdfDoc.close()
             doc.close()
             pdfReader.close()
-            return@withContext true
+            return true
         } catch (e: Exception) {
             dst.delete()
-            return@withContext false
+            return false
         }
     }
 
@@ -277,7 +275,7 @@ object PdfUtilities {
         value: Int,
         password: String?,
         onProgress: (Float) -> Unit,
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): Boolean {
         try {
             val src = resolver.openInputStream(uri)
             val pdfReader = getPdfReader(
@@ -300,18 +298,18 @@ object PdfUtilities {
             pdfDoc.close()
             doc.close()
             pdfReader.close()
-            return@withContext true
+            return true
         } catch (e: Exception) {
             dst.delete()
-            return@withContext false
+            return false
         }
     }
 
     suspend fun getOrientation(
         resolver: ContentResolver,
         uri: Uri,
-    ): Int = withContext(Dispatchers.IO) {
-        return@withContext try {
+    ): Int  {
+        return try {
             val src = resolver.openInputStream(uri)
             val pdfDoc = PdfDocument(PdfReader(src).also { it.setUnethicalReading(true) })
             val orientaion = pdfDoc.firstPage.rotation
@@ -331,7 +329,7 @@ object PdfUtilities {
         dst: File,
         password: String,
         prePassword: String?,
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): Boolean  {
         try {
             val props = WriterProperties()
                 .setStandardEncryption(
@@ -351,10 +349,10 @@ object PdfUtilities {
             )
             pdfDoc.close()
             pdfReader.close()
-            return@withContext true
+            return true
         } catch (e: Exception) {
             dst.delete()
-            return@withContext false
+            return false
         }
     }
 
@@ -363,7 +361,7 @@ object PdfUtilities {
         uri: Uri,
         dst: File,
         password: String?,
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): Boolean {
         try {
             val pdfReader = getPdfReader(
                 resolver = resolver,
@@ -376,10 +374,10 @@ object PdfUtilities {
             )
             pdfDoc.close()
             pdfReader.close()
-            return@withContext true
+            return true
         } catch (e: Exception) {
             dst.delete()
-            return@withContext false
+            return false
         }
     }
 
@@ -397,7 +395,7 @@ object PdfUtilities {
         resolver: ContentResolver,
         uri: Uri,
         password: String,
-    ): Int = withContext(Dispatchers.IO) {
+    ): Int {
         try {
             val src = resolver.openInputStream(uri)
             val props = ReaderProperties().setPassword(password.toByteArray())
@@ -410,11 +408,11 @@ object PdfUtilities {
             pdfReader.close()
             src?.close()
             pdfReader.close()
-            return@withContext totalPageNumber
+            return totalPageNumber
         } catch (e: BadPasswordException) {
-            return@withContext 0
+            return 0
         } catch (e: Exception) {
-            return@withContext -1
+            return -1
         }
     }
 
@@ -425,7 +423,7 @@ object PdfUtilities {
         dst: File,
         password: String?,
         pageOrderList: List<Int>,
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): Boolean {
         try {
             val inputStream = resolver.openInputStream(uri)
             val pdfReader = getPdfReader(
@@ -444,10 +442,10 @@ object PdfUtilities {
             srcDoc.close()
             dstDoc.close()
             pdfReader.close()
-            return@withContext true
+            return true
         } catch (e: Exception) {
             dst.delete()
-            return@withContext false
+            return false
         }
     }
 
@@ -455,7 +453,7 @@ object PdfUtilities {
         resolver: ContentResolver,
         uriList: List<Uri>,
         dst: File,
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): Boolean {
         try {
             val pdfDocument = PdfDocument(PdfWriter(dst)).also {
                 it.defaultPageSize = PageSize.A4
@@ -473,10 +471,10 @@ object PdfUtilities {
             }
             pdfDocument.close()
             document.close()
-            return@withContext true
+            return true
         } catch (e: Exception) {
             dst.delete()
-            return@withContext false
+            return false
         }
     }
 
@@ -487,7 +485,7 @@ object PdfUtilities {
         password: String?,
         imageUri: Uri,
         onProgress: (Float) -> Unit,
-    ): Boolean = withContext(Dispatchers.IO) {
+    ): Boolean {
         try {
             val pdfWriter = PdfWriter(dst)
             val pdfReader = getPdfReader(
@@ -506,8 +504,7 @@ object PdfUtilities {
                 val pageSize1 = pdfPage1.pageSizeWithRotation
 
                 val orgImgBytes = it.readBytes()
-                val imageByteArray =
-                    BitmapUtilities.resizeBitmap(orgImgBytes, pageSize1.width, pageSize1.height)
+                val imageByteArray = BitmapUtilities.resizeBitmap(orgImgBytes, pageSize1.width, pageSize1.height)
                 val imageData = ImageDataFactory.create(imageByteArray)
 
                 Log.e("TAG", "addWaterMark1: ${orgImgBytes.size} ${imageByteArray.size}")
@@ -539,13 +536,13 @@ object PdfUtilities {
                 doc.close()
                 pdfDoc.close()
                 imgStream.close()
-                return@withContext true
+                return true
             }
 
-            return@withContext false
+            return false
         } catch (e: Exception) {
             dst.delete()
-            return@withContext false
+            return false
         }
     }
 

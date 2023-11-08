@@ -44,7 +44,7 @@ class ImageToPdfViewModel:ViewModel() {
         }
     }
 
-    fun imageToPdf(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
+    fun imageToPdf(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.IO)
     {
         uriList.let {
             if(it.isEmpty())

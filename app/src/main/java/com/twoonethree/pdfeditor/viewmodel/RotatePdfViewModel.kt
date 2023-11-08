@@ -35,7 +35,7 @@ class RotatePdfViewModel:ViewModel() {
         selectedPdf.value = PdfData("", "" , null,  0)
     }
 
-    fun changeOrientation(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
+    fun changeOrientation(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.IO)
     {
        selectedPdf.value.uri?.let {
             if(currentOrientation.value == previousOrientation)
@@ -71,7 +71,7 @@ class RotatePdfViewModel:ViewModel() {
 
 
 
-    fun getOrientation(resolver: ContentResolver, uri: Uri?) = viewModelScope.launch(Dispatchers.Default) {
+    fun getOrientation(resolver: ContentResolver, uri: Uri?) = viewModelScope.launch(Dispatchers.IO) {
         uri?.let {
             currentOrientation.value =  PdfUtilities.getOrientation(resolver, it)
             previousOrientation = currentOrientation.value

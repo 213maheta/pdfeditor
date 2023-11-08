@@ -32,7 +32,7 @@ class LockPdfViewModel: ViewModel() {
         selectedPdf.value = PdfData("", "" , null,  0)
     }
 
-    fun setPassword(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
+    fun setPassword(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.IO)
     {
         selectedPdf.value.uri?.let {
             if(selectedPdf.value.totalPageNumber == 0)

@@ -30,7 +30,7 @@ class UnlockPdfViewModel:ViewModel() {
         selectedPdf.value = PdfData("", "" , null,  0)
     }
 
-    fun checkPassword(resolver: ContentResolver)
+    fun checkPassword()
     {
         selectedPdf.value.uri?.let {
 

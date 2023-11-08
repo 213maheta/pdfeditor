@@ -33,7 +33,7 @@ class OrganizePdfViewModel() : ViewModel() {
         selectedPdf.value = PdfData("", "" , null,  0)
     }
 
-    fun reOrderPdf(resolver:ContentResolver) = viewModelScope.launch(Dispatchers.Default)
+    fun reOrderPdf(resolver:ContentResolver) = viewModelScope.launch(Dispatchers.IO)
     {
         selectedPdf.value.uri?.let {
             if(selectedPdf.value.totalPageNumber == 0)

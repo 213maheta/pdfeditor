@@ -390,7 +390,7 @@ fun myToast(context: Context, message: String) {
 }
 
 @Composable
-fun ShowSnackBar() {
+fun ShowSnackBar(alignValue:Alignment = Alignment.BottomCenter) {
 
     val vm = viewModel<CommonComposeViewModel>()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -419,7 +419,7 @@ fun ShowSnackBar() {
                     }
                     .background(color = vm.status)
                     .padding(vertical = 10.dp)
-                    .align(Alignment.BottomCenter),
+                    .align(alignValue),
                 text = vm.message.value,
                 color = Color.White,
                 fontSize = 18.sp,

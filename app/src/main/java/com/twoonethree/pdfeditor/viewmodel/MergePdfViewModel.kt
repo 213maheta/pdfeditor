@@ -25,7 +25,7 @@ class MergePdfViewModel() : ViewModel() {
     val showProgressBar = mutableStateOf(false)
     val showProgressValue = mutableStateOf(0f)
 
-    fun saveMergedPdf(contentResolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default){
+    fun saveMergedPdf(contentResolver: ContentResolver) = viewModelScope.launch(Dispatchers.IO){
         when (pdfList.toList().size) {
             0,1 -> {
                 val message = "Select at least two file"

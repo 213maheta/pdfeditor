@@ -31,7 +31,7 @@ fun UnlockPdfScreen(navController: NavController)
 
     val pickPdfDocument = pdfPickerOpenDocument { pdf ->
         vm.selectedPdf.value = pdf
-        vm.checkPassword(contentResolver)
+        vm.checkPassword()
         true
     }
 
@@ -77,7 +77,7 @@ fun UnlockPdfScreen(navController: NavController)
     MyTopAppBar(
         titleId = R.string.unlock_pdf,
         backClick = { navController.navigateUp() },
-        doneClick = { vm.checkPassword(contentResolver) },
+        doneClick = { vm.checkPassword() },
         floatBtnClick = { pickPdfDocument.launch(arrayOf(context.getString(R.string.application_pdf))) },
         innerContent = innerContent,
     )

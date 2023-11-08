@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,6 +27,7 @@ import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
 import com.twoonethree.pdfeditor.dialog.PasswordDialogScreen
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
+import com.twoonethree.pdfeditor.ui.theme.Orange
 import com.twoonethree.pdfeditor.viewmodel.AddWaterMarkViewModel
 import com.twoonethree.pdfeditor.viewmodel.CommonComposeViewModel
 
@@ -85,9 +88,12 @@ fun AddWaterMarkScreen(navController:NavController)
                         ItemPDF(pdfData, vm::removeSelectedPdf)
                         Box(modifier = Modifier.fillMaxWidth())
                         {
-                            Button(onClick = {
-                                pickImage.launch("image/*")
-                            }, modifier = Modifier.align(Alignment.Center)) {
+                            Button(
+                                onClick = { pickImage.launch("image/*")},
+                                modifier = Modifier.align(Alignment.Center),
+                                colors = ButtonDefaults.buttonColors(containerColor = Orange)
+                            )
+                            {
                                 Text(text = "Pick Image")
                             }
                         }

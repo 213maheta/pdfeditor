@@ -120,6 +120,8 @@ fun PdfPageListView(bitmapList: List<File>, getPdfPage: (ContentResolver) -> Job
 
 @Composable
 fun ItemPage(imageBitmap: File) {
+
+
     AsyncImage(
         model = imageBitmap,
         contentDescription = "Pdf page",

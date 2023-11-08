@@ -81,16 +81,19 @@ class MyCreationViewModel:ViewModel() {
     {
         selectedPdf.value.uri?.let {
             val isSuccess = FileManager.deleteFile(it)
-            if(isSuccess)
+            when(isSuccess)
             {
-                pdfList.remove(selectedPdf.value)
-                setUiIntent(ScreenCommonEvents.ShowSnackBar("File deleted successfully", Green))
-                showBottomSheet.value = false
+                true->{
+                    pdfList.remove(selectedPdf.value)
+                    setUiIntent(ScreenCommonEvents.ShowSnackBar("File deleted successfully", Green))
+                    showBottomSheet.value = false
+                }
+                else->setUiIntent(ScreenCommonEvents.ShowSnackBar("Something went wrong", Orange))
             }
         }
     }
 
-    suspend fun getThumbNail(contentResolver: ContentResolver, uri: Uri): File? = withContext(Dispatchers.Default)
+    suspend fun getThumbNail(contentResolver: ContentResolver, uri: Uri): File? = withContext(Dispatchers.IO)
     {
         return@withContext PdfUtilities.cachedThumbnail(contentResolver, uri)
     }

@@ -42,7 +42,7 @@ class AddPageNumberViewModel:ViewModel() {
         selectedPdf.value = PdfData("", "" , null,0)
     }
 
-    fun addPageNumber(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.Default)
+    fun addPageNumber(resolver: ContentResolver) = viewModelScope.launch(Dispatchers.IO)
     {
         selectedPdf.value.uri?.let {
             if(selectedPdf.value.totalPageNumber == 0)
@@ -70,7 +70,7 @@ class AddPageNumberViewModel:ViewModel() {
         when(selectedCorner.value)
         {
             is AddPageNumberSelection.TOP_LEFT -> return Pair(pageSize.left + 40, pageSize.top - 30)
-            is AddPageNumberSelection.TOP_RIGHT -> return Pair(pageSize.right - 40, pageSize.top - 30)
+            is AddPageNumberSelection.TOP_RIGHT -> return Pair(pageSize.right - 42, pageSize.top - 30)
             is AddPageNumberSelection.BOTTOM_LEFT -> return Pair(pageSize.left + 40, pageSize.bottom + 30)
             is AddPageNumberSelection.BOTTOM_RIGHT -> return Pair(pageSize.right - 40, pageSize.bottom + 30)
             is AddPageNumberSelection.EMPTY -> return Pair(pageSize.x, pageSize.y)

@@ -115,7 +115,7 @@ fun SplitPDFScreen(navController: NavHostController) {
         CircularProgressBar()
     }
 
-    ShowSnackBar()
+    ShowSnackBar(Alignment.TopCenter)
 }
 
 @Composable
