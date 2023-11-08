@@ -91,6 +91,7 @@ suspend fun removePassword(
         dst: File,
         password: String?,
     ): Boolean
+
 ```
 ### 10) Rotate PDF
 ```
@@ -103,3 +104,13 @@ suspend fun changeOrientation(
         onProgress: (Float) -> Unit,
     ): Boolean
 ```
+
+<div align="center">
+  <video src="https://github.com/213maheta/pdfeditor/assets/103872646/999ddaed-4897-4d68-8905-a63a8669410d" />
+</div>
+<div align="center">
+  <video src="https://github.com/213maheta/pdfeditor/assets/103872646/2fe341c0-2628-4797-942f-4c97a9886c35" />
+</div>
+<div align="center">
+  <video src="https://github.com/213maheta/pdfeditor/assets/103872646/531fde87-cd52-4e18-9cf1-855791edcf8a" />
+</div>
