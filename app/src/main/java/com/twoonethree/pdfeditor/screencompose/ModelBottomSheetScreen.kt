@@ -51,7 +51,6 @@ import com.twoonethree.pdfeditor.R
 import com.twoonethree.pdfeditor.dialog.DeleteDialogScreen
 import com.twoonethree.pdfeditor.model.PdfData
 import com.twoonethree.pdfeditor.mycreation.MyCreationViewModel
-import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.dialog.DialogViewModel
 import com.twoonethree.pdfeditor.dialog.RenameDialogScreen
 import java.io.File

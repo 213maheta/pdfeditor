@@ -4,10 +4,8 @@ import android.content.ContentResolver
 import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.ui.theme.Green
-import com.twoonethree.pdfeditor.ui.theme.Orange
-import com.twoonethree.pdfeditor.utilities.CachedManager
+import com.twoonethree.pdfeditor.utilities.PdfUtilities
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

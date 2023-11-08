@@ -8,10 +8,7 @@ import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
 import com.twoonethree.pdfeditor.model.PdfData
-import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 

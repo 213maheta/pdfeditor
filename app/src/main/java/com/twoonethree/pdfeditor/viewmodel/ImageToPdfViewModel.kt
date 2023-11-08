@@ -4,15 +4,14 @@ import android.content.ContentResolver
 import android.net.Uri
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
-import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.ui.theme.Blue
 import com.twoonethree.pdfeditor.ui.theme.Green
 import com.twoonethree.pdfeditor.ui.theme.Orange
 import com.twoonethree.pdfeditor.utilities.FileManager
+import com.twoonethree.pdfeditor.utilities.PdfUtilities
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -53,7 +52,7 @@ class ImageToPdfViewModel:ViewModel() {
                 return@launch
             }
             showProgressBar.value = true
-            val isSuccess =PdfUtilities.imageToPdf(
+            val isSuccess = PdfUtilities.imageToPdf(
                 resolver = resolver,
                 uriList = it,
                 FileManager.createPdfFile()

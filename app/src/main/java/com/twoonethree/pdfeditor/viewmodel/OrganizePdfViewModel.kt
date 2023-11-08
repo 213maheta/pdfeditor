@@ -7,11 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.twoonethree.pdfeditor.events.ScreenCommonEvents
 import com.twoonethree.pdfeditor.model.PdfData
-import com.twoonethree.pdfeditor.pdfutilities.PdfUtilities
 import com.twoonethree.pdfeditor.ui.theme.Blue
 import com.twoonethree.pdfeditor.ui.theme.Green
 import com.twoonethree.pdfeditor.ui.theme.Orange
 import com.twoonethree.pdfeditor.utilities.FileManager
+import com.twoonethree.pdfeditor.utilities.PdfUtilities
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
