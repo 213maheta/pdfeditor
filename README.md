@@ -1,6 +1,6 @@
-# pdfeditor
+# pdfeditor- itext7 Android specific implementation
 
-## Provide easy implementation for Android project
+## PDF Functionality
 ## Below Functionality supported 
  
 ### 1) PDF Viewer with catching
