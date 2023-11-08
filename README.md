@@ -112,9 +112,5 @@ suspend fun changeOrientation(
   <video src="https://github.com/213maheta/pdfeditor/assets/103872646/d3add631-a93c-463e-a5b6-38201125d84f" />
 </div>
 <div align="center">
-  <video src="https://github.com/213maheta/pdfeditor/assets/103872646/413f7d4c-cf87-422d-a793-35f5f804803c" />
+  <video src="https://github.com/213maheta/pdfeditor/assets/103872646/7b80109e-93f4-4779-ac7d-2a3c53b7e8f5" />
 </div>
-
-
-
-
